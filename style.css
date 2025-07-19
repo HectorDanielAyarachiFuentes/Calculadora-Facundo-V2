@@ -161,3 +161,105 @@ header .subtitle a:hover {
 
 
 
+/* ======================================================= */
+/* --- COMPONENTE: HISTORIAL (History Panel) --- */
+/* ======================================================= */
+.history-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1002; /* Más alto para que esté siempre por encima del panel */
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s, transform 0.2s, opacity 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.history-toggle-btn:hover { background-color: #4CAF50; transform: scale(1.1); }
+.history-toggle-btn svg { width: 28px; height: 28px; fill: #eee; }
+
+/* Ocultar el botón de alternar cuando el panel está abierto para evitar superposición */
+.history-panel.history-panel--open + .history-toggle-btn {
+    opacity: 0;
+    pointer-events: none; /* Crucial para que no se pueda clickear */
+}
+
+.history-panel {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Inicia fuera de la pantalla */
+    width: 350px; /* Ancho fijo para el panel */
+    max-width: 100vw;
+    height: 100dvh;
+    background-color: var(--history-panel-bg);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Ligeramente más bajo que el botón de toggle */
+    display: flex;
+    flex-direction: column;
+    transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+    visibility: hidden; /* Controlado por JS para evitar scrollbar en estado oculto */
+}
+.history-panel--open { right: 0; visibility: visible; }
+
+.history-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--history-header-bg);
+    border-bottom: 1px solid var(--history-border-color);
+    flex-shrink: 0; /* No se encogerá */
+}
+.history-panel__title { margin: 0; font-size: 1.3em; color: var(--history-text-color); font-weight: bold; flex-grow: 1; }
+
+.history-panel__clear-btn {
+    background-color: var(--history-clear-btn-bg);
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    font-size: 0.85em;
+    font-family: 'jellyregular', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-left: 20px; /* Espacio para separar del título */
+    flex-shrink: 0; /* No se encogerá */
+}
+.history-panel__clear-btn:hover { background-color: var(--history-clear-btn-hover-bg); transform: scale(1.05); }
+
+.history-panel__list { list-style: none; padding: 0 10px; margin: 0; flex-grow: 1; overflow-y: auto; color: var(--history-text-color); padding-bottom: 10px; }
+.history-panel__item {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--history-border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.history-panel__item:last-child { border-bottom: none; }
+.history-panel__item:hover { background-color: var(--history-hover-bg); }
+
+.history-panel__input { font-size: 0.95em; color: var(--history-input-color); word-break: break-all; line-height: 1.3; }
+.history-panel__result { font-size: 1.2em; font-weight: bold; color: var(--color-display-text); margin-top: 6px; word-break: break-all; display: block; }
+.history-item-highlight { animation: highlight 1s ease-in-out; }
+@keyframes highlight { 0% { background-color: rgba(76, 175, 80, 0.4); } 100% { background-color: transparent; } }
+
+/* --- Media Queries --- */
+@media (max-width: 600px) {
+    .history-toggle-btn { top: 10px; right: 10px; width: 45px; height: 45px; }
+    .history-toggle-btn svg { width: 24px; height: 24px; }
+    .history-panel { width: 100vw; }
+}

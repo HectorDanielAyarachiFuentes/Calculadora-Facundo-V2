@@ -16,6 +16,8 @@ import {
 
 import { crearMensajeError } from './operations/utils/dom-helpers.js';
 
+import { HistoryManager, HistoryPanel } from './history.js';
+
 
 // --- VARIABLES DE ESTADO DE LA APLICACIÓN ---
 let w; // Ancho base para cálculos de tamaño responsivo.
@@ -30,6 +32,10 @@ let lastDivisionState = { // Objeto para guardar el estado de la última divisi�
 // --- INICIALIZACIÓN Y EVENTOS ---
 // =======================================================
 
+/**
+ * Función de inicialización que se ejecuta al cargar la página.
+ * Configura el tamaño inicial de la UI y los listeners de eventos.
+ */
 function alCargar() {
     w = Math.min(window.innerHeight / 1.93, window.innerWidth / 1.5);
     contenedor.style.width = `${w}px`;
@@ -57,13 +63,16 @@ function alCargar() {
     display.innerHTML = '0';
 
     activadoBotones('0'); // Inicia con display en "0"
-    if (window.HistoryManager) HistoryManager.init();
-    if (window.HistoryPanel) HistoryPanel.init();
-    actualizarEstadoDivisionUI(false);
+    HistoryManager.init(); 
+    HistoryPanel.init();    
+    actualizarEstadoDivisionUI(false); // Corregido: 'atualizar' a 'actualizar'
 
     setupEventListeners();
 }
 
+/**
+ * Configura los listeners de eventos para la aplicación.
+ */
 function setupEventListeners() {
     teclado.removeEventListener('click', handleButtonClick);
     divVolver.removeEventListener('click', handleButtonClick);
@@ -81,6 +90,10 @@ function setupEventListeners() {
 // --- MANEJADORES DE ACCIONES (HANDLERS) ---
 // =======================================================
 
+/**
+ * Maneja los clics en los botones de la calculadora.
+ * @param {Event} event - El objeto del evento de clic.
+ */
 function handleButtonClick(event) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
@@ -95,6 +108,10 @@ function handleButtonClick(event) {
     }
 }
 
+/**
+ * Maneja la entrada desde el teclado físico.
+ * @param {KeyboardEvent} event - El objeto del evento de teclado.
+ */
 function handleKeyboardInput(event) {
     const key = event.key;
     if (/[0-9+\-*/=.,cC]/.test(key) || ['Enter', 'Backspace', 'Delete', 'Escape', 'x', 'X'].includes(key)) {
@@ -114,6 +131,10 @@ function handleKeyboardInput(event) {
     else if (key === 'Delete' || key === 'Escape') escribir('c');
 }
 
+/**
+ * Dirige las acciones especiales de los botones a su función correspondiente.
+ * @param {string} action - La acción a realizar.
+ */
 function handleAction(action) {
     switch (action) {
         case 'view-screen': bajarteclado(); break;
@@ -128,7 +149,7 @@ function handleAction(action) {
             requestAnimationFrame(() => {
                 desFacPri();
                 if (!salida.querySelector('.output-screen__error-message')) {
-                    if (window.HistoryManager) HistoryManager.add({ input: `Factores Primos(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
+                    HistoryManager.add({ input: `Factores Primos(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
                 }
                 actualizarEstadoDivisionUI(false);
             });
@@ -138,7 +159,7 @@ function handleAction(action) {
             requestAnimationFrame(() => {
                 raizCuadrada();
                 if (!salida.querySelector('.output-screen__error-message')) {
-                    if (window.HistoryManager) HistoryManager.add({ input: `√(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
+                    HistoryManager.add({ input: `√(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
                 }
                 actualizarEstadoDivisionUI(false);
             });
@@ -161,8 +182,15 @@ function escribir(t) {
     const currentDisplay = display.innerHTML;
     const isOperator = ['+', '-', 'x', '/'].includes(t);
     // hasBinaryOperatorInExpression: Detecta si ya hay un operador binario en la expresión (ej: "5+3", "5*-3").
-    // Ignora un '-' al inicio si es para un número negativo (ej: "-5").
-    const hasBinaryOperatorInExpression = /[+\-x/]/.test(currentDisplay.slice(currentDisplay.startsWith('-') ? 1 : 0).replace(/^[0-9,]+/, ''));
+    // Excluye el primer número y la coma para encontrar el operador binario.
+    const hasBinaryOperatorInExpression = /[+\-x/]/.test(currentDisplay.replace(/^-?[0-9,]+/, ''));
+    
+    // Si la última operación fue un cálculo, y se pulsa un número, limpiar el display.
+    // Opcional: Podrías mantener el resultado para encadenar operaciones si no se borra.
+    // if (lastCalculationDone && !isOperator && t !== ',' && t !== 'c' && t !== 'del') {
+    //     display.innerHTML = '0';
+    //     lastCalculationDone = false;
+    // }
 
     if (t === "c") { // Clear
         display.innerHTML = "0";
@@ -174,22 +202,21 @@ function escribir(t) {
         const lastChar = currentDisplay.slice(-1);
         const lastCharIsOperator = ['+', '-', 'x', '/'].includes(lastChar);
         
-        // Regla principal: Una sola operación binaria por expresión.
         if (hasBinaryOperatorInExpression && !lastCharIsOperator) { 
             // Caso: Ya hay un operador y un segundo número (ej: "5+3"). No permitir otro operador.
             return;
         } else if (lastCharIsOperator) { 
-            // Caso: La entrada termina en operador (ej: "5+", "5-"). Reemplazar el operador.
-            // Esta lógica se mantiene para permitir cambiar de 5+ a 5- o 5* a 5/
-            // Si quieres que NO se pueda cambiar de operador, simplemente `return;` aquí.
+            // Caso: La entrada termina en operador (ej: "5+", "5-").
+            // Siempre se permite cambiar el operador si el nuevo es diferente (ej: "5+" -> "5-").
+            // Si el nuevo operador es el mismo, no se hace nada (ej: "5++" -> "5+").
+            if (lastChar === t) return; 
             display.innerHTML = currentDisplay.slice(0, -1) + t;
-        } else if (currentDisplay === "0") { 
-            // Caso: Display es "0". Solo permitir "-" para iniciar número negativo. Otros operadores no.
-            if (t === '-') {
-                display.innerHTML = t; 
-            } else {
-                return; // No permitir "0+", "0x", "0/"
-            }
+        } else if (currentDisplay === "0" && t === '-') { 
+            // Caso: Display es "0" y se pulsa "-", permitir iniciar número negativo.
+            display.innerHTML = t; 
+        } else if (currentDisplay === "0" && t !== '-') { 
+            // Caso: Display es "0" y se pulsa otro operador (+, x, /). No permitir.
+            return; 
         } else if (currentDisplay.endsWith(',')) {
             return; // Si termina en coma (ej. "5,"), no permitir operadores.
         } else { 
@@ -219,7 +246,14 @@ function calcular() {
 
     // Validar que la entrada tenga el formato "numero operador numero"
     // Ignora el '-' inicial si es un número negativo
-    if (!operadorMatch || !/[0-9]+\s*[+\-x/]\s*(-?[0-9]+([,\.][0-9]+)?)/.test(entrada.replace(/^-/, ''))) { // Regex para validar num1 operador num2
+    if (!operadorMatch || !/^-?[0-9,]+\s*[+\-x/]\s*(-?[0-9,]+)$/.test(entrada)) { 
+        salida.appendChild(crearMensajeError(errorMessages.invalidOperation));
+        bajarteclado();
+        actualizarEstadoDivisionUI(false);
+        return;
+    }
+    // Si la expresión termina en un operador o coma, no se puede calcular
+    if (['+', '-', 'x', '/'].includes(entrada.slice(-1)) || entrada.endsWith(',')) {
         salida.appendChild(crearMensajeError(errorMessages.invalidOperation));
         bajarteclado();
         actualizarEstadoDivisionUI(false);
@@ -314,8 +348,10 @@ function actualizarEstadoDivisionUI(esDivisionValida) {
         // Muestra el botón de la vista alternativa a la actual
         botExp.style.display = divext ? "none" : "inline-block";
         botNor.style.display = divext ? "inline-block" : "none";
-    } else {
-        // Oculta ambos botones si no hay una división válida
+    }
+    // Comprobar si los elementos botExp y botNor existen antes de intentar acceder a su estilo
+    // Esto es más seguro si por alguna razón no se encuentran en el DOM (aunque deberían)
+    else if (botExp && botNor) { 
         botExp.style.display = "none";
         botNor.style.display = "none";
         lastDivisionState = { operacionInput: '', numerosAR: null, tipo: '' };
@@ -325,10 +361,13 @@ function actualizarEstadoDivisionUI(esDivisionValida) {
 /**
  * Habilita o deshabilita los botones del teclado según el contenido del display.
  * @param {string} contDisplay - El contenido actual del display.
+ * @summary Lógica: Al inicio solo números y coma. Si hay un operador, deshabilitar otros.
+ *          Permite - para iniciar negativos. No encadena operaciones.
  */
 function activadoBotones(contDisplay) {
     const esSoloCero = contDisplay === '0';
-    // hasBinaryOperatorInExpression: Detecta si ya hay un operador binario (+, x, / o - que no es inicio de negativo)
+    // hasBinaryOperatorInExpression: Detecta si ya hay un operador binario en la expresión
+    // (ej: "5+3", "5*-3"). Ignora un '-' al inicio para números negativos.
     const hasBinaryOperatorInExpression = /[+\-x/]/.test(contDisplay.slice(contDisplay.startsWith('-') ? 1 : 0).replace(/^[0-9,]+/, ''));
     
     const partes = contDisplay.split(/[\+\-x/]/);
@@ -348,12 +387,16 @@ function activadoBotones(contDisplay) {
     document.querySelectorAll('[data-value="+"], [data-value="-"], [data-value="x"], [data-value="/"]').forEach(btn => {
         const isMinusButton = btn.dataset.value === '-';
         if (demasiadosCaracteres) {
-            btn.disabled = true; // Deshabilitar si la cadena ya es muy larga
+            btn.disabled = true; // Si la cadena es muy larga, deshabilitar operadores
         } else if (hasBinaryOperatorInExpression) {
-            // Ya hay un operador binario en la expresión
-            btn.disabled = true; // Deshabilitar todos los operadores. No permite más de uno.
+            // Si ya existe un operador binario en la expresión
+            // Deshabilita todos los operadores. No permite más de uno.
+            btn.disabled = true;
         } else if (esSoloCero) {
-            btn.disabled = true; // Si es "0", deshabilitar TODOS los operadores (+, -, x, /).
+            // Si el display es "0", deshabilitar TODOS los operadores (+, -, x, /).
+            // Permite iniciar un número negativo escribiendo el número directamente (ej. 0 -> 5 -> -5)
+            // Opcional: si quisieras que el - fuera activo en 0, la lógica sería diferente.
+            btn.disabled = true; 
         } else if (contDisplay.endsWith(',')) {
             btn.disabled = true; // No permite operador después de una coma (ej: "5,+").
         } else {
@@ -374,7 +417,7 @@ function activadoBotones(contDisplay) {
     });
 
     // Botón de Calcular (=) - habilitar si hay num1 operador num2
-    const esCalculable = /[0-9]+[+\-x/][0-9]+/.test(contDisplay.replace(/^-/, ''));
+    const esCalculable = /^-?[0-9,]+\s*[+\-x/]\s*(-?[0-9,]+)$/.test(contDisplay);
     const btnIgual = document.querySelector('[data-action="calculate"]');
     if (btnIgual) btnIgual.disabled = !esCalculable;
 }
