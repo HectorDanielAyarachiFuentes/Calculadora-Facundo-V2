@@ -332,3 +332,54 @@ header .subtitle a:hover {
   /* No necesita transform-origin si el elemento ya está centrado */
   animation: pulse-animation 0.5s ease-in-out;
 }
+
+
+
+
+/* --- ANIMACIÓN DE BUCLE PARA SUMA --- */
+
+.output-grid__cell--suma-intermedia {
+  /* Estilo para el número de la suma intermedia, como el 17 */
+  color: #f0ad4e; /* Un color que destaque, como un amarillo/naranja */
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
+  z-index: 10; /* Para que aparezca por encima de otros elementos si se solapan */
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Puedes añadir animaciones de entrada si quieres */
+@keyframes fadeIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.output-grid__cell--suma-intermedia {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Para el pulso que se aplica y se quita con Javascript */
+.pulse {
+  animation: pulse-effect 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes pulse-effect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Estilo para los números de la suma intermedia (17, 18, etc.) */
+.output-grid__cell--suma-intermedia {
+  color: #f0ad4e; /* Amarillo/Naranja para destacar */
+  font-weight: bold;
+  text-align: center;
+  z-index: 10;
+  /* La transición y opacidad se manejan con JS para el bucle final */
+}
