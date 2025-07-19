@@ -85,33 +85,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--focus-color); o
 .bottom-nav__button--arrow { font-family: 'arrow_7regular', sans-serif; font-size: 1.5rem; }
 
 /* ======================================================= */
-/* --- COMPONENTE: HISTORIAL (History Panel) --- */
-/* ======================================================= */
-.history-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1002; background-color: #333; border: 1px solid #555; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s, transform 0.2s; }
-.history-toggle-btn:hover { background-color: #4CAF50; transform: scale(1.1); }
-.history-toggle-btn svg { width: 28px; height: 28px; fill: #eee; }
-.history-panel { position: fixed; top: 0; right: -100%; width: 350px; max-width: 100vw; height: 100dvh; background-color: var(--history-panel-bg); z-index: 1000; display: flex; flex-direction: column; transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1); visibility: hidden; }
-.history-panel--open { right: 0; visibility: visible; }
-.history-panel__header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: var(--history-header-bg); border-bottom: 1px solid var(--history-border-color); }
-.history-panel__title { margin: 0; font-size: 1.3em; color: var(--history-text-color); }
-.history-panel__clear-btn { background-color: var(--history-clear-btn-bg); color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.85em; }
-.history-panel__clear-btn:hover { background-color: var(--history-clear-btn-hover-bg); }
-.history-panel__list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
-.history-panel__item { padding: 12px 15px; border-bottom: 1px solid var(--history-border-color); cursor: pointer; transition: background-color 0.2s; }
-.history-panel__item:hover { background-color: var(--history-hover-bg); }
-.history-panel__input { font-size: 0.95em; color: var(--history-input-color); word-break: break-all; }
-.history-panel__result { font-size: 1.2em; font-weight: bold; color: var(--color-display-text); margin-top: 6px; }
-
-/* ======================================================= */
 /* --- ANIMACIONES --- */
 /* ======================================================= */
 .animate-fade-in-scale { opacity: 0; transform: scale(0.5); animation: fadeInScale-animation 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes fadeInScale-animation { to { opacity: 1; transform: scale(1); } }
-
-
-
-
-
 
 /* ======================================================= */
 /* --- COMPONENTE: HEADER (Título Principal) --- */
@@ -154,15 +131,8 @@ header .subtitle a:hover {
     color: #4de89d;
 }
 
-
-
-
-
-
-
-
 /* ======================================================= */
-/* --- COMPONENTE: HISTORIAL (History Panel) --- */
+/* --- COMPONENTE: HISTORIAL (History Panel) (Versión con botón LIMPIAR a la izquierda) --- */
 /* ======================================================= */
 .history-toggle-btn {
     position: fixed;
@@ -212,14 +182,22 @@ header .subtitle a:hover {
 
 .history-panel__header {
     display: flex;
-    justify-content: space-between;
+    /* Mantenemos justify-content: flex-start para que los elementos empiecen a la izquierda */
+    justify-content: flex-start;
     align-items: center;
     padding: 15px 20px;
     background-color: var(--history-header-bg);
     border-bottom: 1px solid var(--history-border-color);
     flex-shrink: 0; /* No se encogerá */
 }
-.history-panel__title { margin: 0; font-size: 1.3em; color: var(--history-text-color); font-weight: bold; flex-grow: 1; }
+.history-panel__title {
+    margin: 0;
+    font-size: 1.3em;
+    color: var(--history-text-color);
+    font-weight: bold;
+    /* CAMBIO CLAVE: Quitamos flex-grow para que el título no empuje el botón */
+    /* flex-grow: 1; */
+}
 
 .history-panel__clear-btn {
     background-color: var(--history-clear-btn-bg);
@@ -263,7 +241,6 @@ header .subtitle a:hover {
     .history-toggle-btn svg { width: 24px; height: 24px; }
     .history-panel { width: 100vw; }
 }
-
 
 /* --- Animación Arcoíris Optimizada --- */
 @keyframes arcoiris {
