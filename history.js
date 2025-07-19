@@ -17,22 +17,35 @@ class HistoryManagerClass {
     init() {
         this.loadHistory();
         HistoryPanel.renderHistory();
-        // Los event listeners para los botones de historial se mueven a HistoryPanel
-        // para encapsular la lógica del UI del historial.
     }
 
-    add(item) { // item: { input: "...", visualHtml: "...", type: "visual" }
-        // Asegurarse de que el resultado se extraiga y se guarde
+    add(item) {
+        // --- ¡NUEVA LÓGICA DE DETECCIÓN DE DUPLICADOS! ---
+        const duplicateIndex = this.history.findIndex(existingItem => existingItem.input === item.input);
+        if (duplicateIndex !== -1) {
+            // Si se encuentra un duplicado, muestra la alerta
+            alert('¡Oye! Ya has realizado esta operación antes. ¡Mira el historial!');
+            // Abre el panel y resalta el elemento existente
+            if (!HistoryPanel.isOpen()) {
+                HistoryPanel.open();
+            }
+            HistoryPanel.highlightItem(duplicateIndex);
+        }
+        
+        // El resto de la lógica para añadir el elemento continúa como siempre
         if (!item.result) {
             item.result = HistoryPanel.extractResultText(item.visualHtml);
         }
-        this.history.unshift(item); // Añadir al principio
+        this.history.unshift(item);
         if (this.history.length > this.MAX_HISTORY_ITEMS) {
-            this.history.pop(); // Eliminar el más antiguo
+            this.history.pop();
         }
         this.saveHistory();
         HistoryPanel.renderHistory();
-        HistoryPanel.highlightLastItem();
+        // Si no era un duplicado, resalta el nuevo elemento que se acaba de añadir
+        if (duplicateIndex === -1) {
+            HistoryPanel.highlightLastItem();
+        }
     }
 
     getHistory() { return this.history; }
@@ -54,6 +67,8 @@ class HistoryPanelClass {
         this.list = document.getElementById('history-list');
         this.toggleButton = document.getElementById('history-toggle-btn');
         this.clearButton = document.getElementById('clear-history-btn');
+        this.handleOutsideClick = this.handleOutsideClick.bind(this);
+        this.confirmAndClear = this.confirmAndClear.bind(this);
     }
 
     init() {
@@ -63,10 +78,23 @@ class HistoryPanelClass {
 
     addEventListeners() {
         if (this.toggleButton) {
-            this.toggleButton.addEventListener('click', () => this.toggle());
+            this.toggleButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggle();
+            });
         }
         if (this.clearButton) {
-            this.clearButton.addEventListener('click', () => HistoryManager.clearAll());
+            this.clearButton.addEventListener('click', this.confirmAndClear);
+        }
+    }
+
+    confirmAndClear() {
+        const isConfirmed = window.confirm(
+            '¿Estás seguro de que quieres borrar todo el historial?\n\nEsta acción no se puede deshacer.'
+        );
+
+        if (isConfirmed) {
+            HistoryManager.clearAll();
         }
     }
 
@@ -76,44 +104,78 @@ class HistoryPanelClass {
             const li = document.createElement('li');
             li.className = 'history-panel__item';
             li.dataset.index = index;
-            // Usamos el 'input' y el 'result' pre-extraído para el preview
             li.innerHTML = `
                 <span class="history-panel__input">${item.input}</span>
                 <span class="history-panel__result">= ${item.result}</span>
             `;
-            // Listener para cargar el resultado visual al hacer clic en el historial
             li.addEventListener('click', () => {
-                salida.innerHTML = item.visualHtml; // Restaura la visualización completa
-                display.innerHTML = item.input; // Opcional: restaura la entrada en el display principal
-                // Si la visualización es un error, el HistoryManager ya debería haber guardado el HTML de error.
-                // Si necesitas el color rojo para el error al restaurar, el HTML guardado debe contenerlo.
-                // Asegúrate de que HistoryPanel sepa cómo extraer el error o el resultado.
-                this.toggle(); // Cerrar el panel del historial
+                salida.innerHTML = item.visualHtml; 
+                display.innerHTML = item.input;
+                this.close();
             });
             this.list.appendChild(li);
         });
     }
 
-    // Extrae el texto del resultado o mensaje de error de un HTML visual
     extractResultText(htmlString) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
-        const cociente = tempDiv.querySelector('.output-grid__cell--cociente');
-        if (cociente) return cociente.textContent;
-        const resto = tempDiv.querySelector('.output-grid__cell--resto'); // Para la división final
-        if (resto) return resto.textContent; // Podrías combinar con cociente si quieres "Cociente: X Resto: Y"
+        const cocienteElements = tempDiv.querySelectorAll('.output-grid__cell--cociente');
+        if (cocienteElements.length > 0) {
+            return Array.from(cocienteElements).map(el => el.textContent).join('');
+        }
+        const resto = tempDiv.querySelector('.output-grid__cell--resto'); 
+        if (resto) {
+            return `Resto: ${resto.textContent}`;
+        }
         const error = tempDiv.querySelector('.output-screen__error-message');
         if (error) return error.textContent;
-        // Fallback: Si no es una operación visual específica, coge el primer texto significativo
         return tempDiv.textContent.trim().split('\n')[0] || 'Resultado';
     }
+    
+    handleOutsideClick(event) {
+        if (this.isOpen() && !this.panel.contains(event.target)) {
+            this.close();
+        }
+    }
+    
+    isOpen() {
+        return this.panel.classList.contains('history-panel--open');
+    }
 
+    open() {
+        if (this.isOpen()) return;
+        this.panel.classList.add('history-panel--open');
+        document.addEventListener('click', this.handleOutsideClick, true);
+    }
+
+    close() {
+        if (!this.isOpen()) return;
+        this.panel.classList.remove('history-panel--open');
+        document.removeEventListener('click', this.handleOutsideClick, true);
+    }
+    
     toggle() {
-        this.panel.classList.toggle('history-panel--open');
-        this.panel.setAttribute('aria-hidden', !this.panel.classList.contains('history-panel--open'));
-        this.toggleButton.setAttribute('aria-expanded', this.panel.classList.contains('history-panel--open'));
-        // Si el panel se abre, podría ser útil desactivar la interactividad del teclado principal.
-        // Pero como ya lo maneja 'bajarteclado/subirteclado', no es necesario aquí.
+        this.isOpen() ? this.close() : this.open();
+    }
+    
+    // --- NUEVO MÉTODO GENÉRICO PARA RESALTAR ---
+    highlightItem(index) {
+        const itemToHighlight = this.list.querySelector(`.history-panel__item[data-index="${index}"]`);
+        if (itemToHighlight) {
+            // Desplazarse al elemento si está fuera de la vista
+            itemToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Aplicar la animación
+            itemToHighlight.classList.add('history-item-highlight');
+            setTimeout(() => {
+                itemToHighlight.classList.remove('history-item-highlight');
+            }, 1500); // Duración un poco más larga para que el usuario pueda verlo bien
+        }
+    }
+
+    highlightLastItem() {
+        // El último elemento añadido es siempre el primero en la lista (índice 0)
+        this.highlightItem(0);
     }
 }
 
