@@ -1,12 +1,11 @@
 // =======================================================
-// --- operations/modules/multiplication.js (VERSIÓN FINAL CORREGIDA) ---
+// --- operations/modules/multiplication.js (VERSIÓN FINALÍSIMA) ---
 // =======================================================
 "use strict";
 
 import { calculateLayout } from '../utils/layout-calculator.js';
 import { crearCelda } from '../utils/dom-helpers.js';
-// --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-// Añadimos la importación correcta desde config.js
+// --- ¡LA LÍNEA QUE FALTABA! ---
 import { salida, errorMessages } from '../../config.js';
 
 /**
@@ -17,7 +16,6 @@ export function multiplica(numerosAR) {
     salida.innerHTML = "";
     const fragment = document.createDocumentFragment();
 
-    // --- 1. CÁLCULOS DE LA OPERACIÓN ---
     const [num1, numDec1] = numerosAR[0];
     const [num2, numDec2] = numerosAR[1];
 
@@ -42,21 +40,18 @@ export function multiplica(numerosAR) {
     }
     if (resultadoDisplay.includes(',')) resultadoDisplay = resultadoDisplay.replace(/0+$/, '').replace(/,$/, '');
 
-    // --- 2. CÁLCULO DEL LAYOUT ---
     const longestPartialProductLength = num2.length > 1 ? [...num2].reduce((max, d) => Math.max(max, (BigInt(num1) * BigInt(d)).toString().length), 0) : 0;
     const anchuraEnCeldas = Math.max(num1Display.length, num2Display.length + 1, resultadoDisplay.length, longestPartialProductLength + num2.length - 1);
     const alturaEnCeldas = 3 + (num2.length > 1 ? num2.length + 1 : 0);
     
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, anchuraEnCeldas, alturaEnCeldas);
     
-    // --- 3. LÓGICA DE VISUALIZACIÓN ---
     let yPos = paddingTop;
 
     for (let i = 0; i < num1Display.length; i++) {
         const leftPos = offsetHorizontal + (anchuraEnCeldas - num1Display.length + i) * tamCel + paddingLeft;
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", num1Display[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
-
     yPos += tamCel;
     const signLeft = offsetHorizontal + (anchuraEnCeldas - num2Display.length - 1) * tamCel + paddingLeft;
     fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "x", { left: `${signLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
@@ -76,7 +71,7 @@ export function multiplica(numerosAR) {
             let resultadoFila = (BigInt(num1) * BigInt(num2[i])).toString();
             let colOffset = num2.length - 1 - i;
             
-            if (i < num2.length - 1) {
+            if (i === 0) {
                 const signPlusLeft = offsetHorizontal + (anchuraEnCeldas - resultadoFila.length - colOffset - 1) * tamCel + paddingLeft;
                 fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "+", { left: `${signPlusLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
             }
