@@ -2,9 +2,53 @@
 // --- main.js ---
 // Punto de entrada principal. Gestiona la inicialización,
 // los eventos de usuario y el estado de la UI.
-// DEBE CARGARSE AL FINAL.
+// DEBE CARGARSE COMO UN MÓDULO.
 // =======================================================
 "use strict";
+
+// --- IMPORTACIONES DE MÓDULOS ---
+// Importa las funciones de operación desde nuestro módulo centralizado
+import {
+    suma,
+    resta,
+    multiplica,
+    divide,
+    divideExt,
+    desFacPri,
+    raizCuadrada,
+    parsearNumeros
+} from './operations/index.js';
+
+// Importa los elementos del DOM y mensajes desde el módulo de configuración
+import {
+    display,
+    salida,
+    contenedor,
+    teclado,
+    divVolver,
+    botExp,
+    botNor,
+    errorMessages
+} from './config.js';
+
+// Nota: HistoryManager y HistoryPanel deberían idealmente ser importados también si se refactorizan a módulos.
+// import { HistoryManager } from './history.js';
+// import { HistoryPanel } from './historyPanel.js';
+
+// --- VARIABLES DE ESTADO DE LA APLICACIÓN ---
+// Estas variables definen el estado actual de la calculadora y son gestionadas por main.js.
+let w; // Ancho base para UI responsiva.
+let divext = false; // ¿Está activada la vista de división extendida?
+let lastDivisionState = {
+    operacionInput: '',
+    numerosAR: null,
+    tipo: ''
+};
+
+
+// =======================================================
+// --- INICIALIZACIÓN Y EVENTOS ---
+// =======================================================
 
 /**
  * Función de inicialización que se ejecuta al cargar la página.
@@ -33,6 +77,7 @@ function alCargar() {
     display.innerHTML = '0';
 
     activadoBotones('0');
+    // Asumimos que HistoryManager y HistoryPanel están disponibles globalmente por ahora
     HistoryManager.init();
     HistoryPanel.init();
     actualizarEstadoDivisionUI(false);
@@ -55,9 +100,14 @@ function setupEventListeners() {
     window.addEventListener('resize', alCargar);
 }
 
+
+// =======================================================
+// --- MANEJADORES DE ACCIONES (HANDLERS) ---
+// =======================================================
+
 /**
  * Maneja los clics en los botones de la calculadora.
- * @param {Event} event - El objeto del evento de clic.
+ * @param {Event} event
  */
 function handleButtonClick(event) {
     const button = event.target.closest('button');
@@ -74,48 +124,8 @@ function handleButtonClick(event) {
 }
 
 /**
- * Dirige las acciones especiales de los botones.
- * @param {string} action - La acción a realizar.
- */
-function handleAction(action) {
-    switch (action) {
-        case 'view-screen':
-            bajarteclado();
-            break;
-        case 'calculate':
-            calcular();
-            break;
-        case 'clear':
-            escribir('c');
-            break;
-        case 'delete':
-            escribir('del');
-            break;
-        case 'primos':
-            bajarteclado();
-            requestAnimationFrame(() => desFacPri());
-            break;
-        case 'raiz':
-            bajarteclado();
-            requestAnimationFrame(() => raizCuadrada());
-            break;
-        case 'hide-screen':
-            subirteclado();
-            break;
-        case 'divide-expanded':
-            divideExpandida(true);
-            break;
-        case 'divide-normal':
-            divideExpandida(false);
-            break;
-        default:
-            console.warn(`Acción desconocida: ${action}`);
-    }
-}
-
-/**
  * Maneja la entrada desde el teclado físico.
- * @param {KeyboardEvent} event - El objeto del evento de teclado.
+ * @param {KeyboardEvent} event
  */
 function handleKeyboardInput(event) {
     const key = event.key;
@@ -136,14 +146,55 @@ function handleKeyboardInput(event) {
 }
 
 /**
+ * Dirige las acciones especiales de los botones a su función correspondiente.
+ * @param {string} action
+ */
+function handleAction(action) {
+    switch (action) {
+        case 'view-screen': bajarteclado(); break;
+        case 'calculate': calcular(); break;
+        case 'clear': escribir('c'); break;
+        case 'delete': escribir('del'); break;
+        case 'hide-screen': subirteclado(); break;
+        case 'divide-expanded': divideExpandida(true); break;
+        case 'divide-normal': divideExpandida(false); break;
+        case 'primos':
+            bajarteclado();
+            requestAnimationFrame(() => {
+                desFacPri();
+                if (!salida.querySelector('.error')) {
+                    HistoryManager.add({ input: `Factores Primos(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
+                }
+                actualizarEstadoDivisionUI(false);
+            });
+            break;
+        case 'raiz':
+            bajarteclado();
+            requestAnimationFrame(() => {
+                raizCuadrada();
+                if (!salida.querySelector('.error')) {
+                    HistoryManager.add({ input: `√(${display.innerHTML})`, visualHtml: salida.innerHTML, type: 'visual' });
+                }
+                actualizarEstadoDivisionUI(false);
+            });
+            break;
+        default: console.warn(`Acción desconocida: ${action}`);
+    }
+}
+
+
+// =======================================================
+// --- LÓGICA DE LA APLICACIÓN ---
+// =======================================================
+
+/**
  * Escribe en el display principal de la calculadora.
- * @param {string} t - El carácter o comando a procesar ('c', 'del', etc.).
+ * @param {string} t
  */
 function escribir(t) {
     if (t === '/' || ['+', '-', 'x', ',', 'c', 'del'].includes(t) || !isNaN(parseInt(t))) {
         actualizarEstadoDivisionUI(false);
     }
-
     if (t === "c") {
         display.innerHTML = "0";
     } else if (t === "del") {
@@ -152,85 +203,11 @@ function escribir(t) {
         if (t === ',' && display.innerHTML.endsWith(',')) return;
         if (['+', '-', 'x', '/'].includes(t) && ['+', '-', 'x', '/'].includes(display.innerHTML.slice(-1))) {
             display.innerHTML = display.innerHTML.slice(0, -1) + t;
-            activadoBotones(display.innerHTML);
-            return;
+        } else {
+            display.innerHTML = (display.innerHTML === "0" && t !== ",") ? t : display.innerHTML + t;
         }
-        display.innerHTML = (display.innerHTML === "0" && t !== ",") ? t : display.innerHTML + t;
     }
     activadoBotones(display.innerHTML);
-}
-
-/**
- * Habilita o deshabilita los botones según el estado del display.
- * @param {string} contDisplay - El contenido actual del display.
- */
-function activadoBotones(contDisplay) {
-    const esSoloCero = contDisplay === '0';
-    const tieneOperadorAlFinal = /[\+\-x/]$/.test(contDisplay);
-    const tieneComaAlFinal = /,$/.test(contDisplay);
-    const partes = contDisplay.split(/[\+\-x/]/);
-    const ultimoNumero = partes[partes.length - 1];
-    const demasiadosCaracteres = contDisplay.length >= 21;
-    const ultimoNumeroDemasiadoLargo = ultimoNumero.length >= 15;
-
-    const deshabilitarNumeros = demasiadosCaracteres || ultimoNumeroDemasiadoLargo;
-    ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'].forEach(id => {
-        document.getElementById(id).disabled = deshabilitarNumeros;
-    });
-
-    const puedeAnadirOperador = !esSoloCero && !tieneOperadorAlFinal && !tieneComaAlFinal;
-    ['tmas', 'tmen', 'tpor', 'tdiv'].forEach(id => {
-        document.getElementById(id).disabled = !puedeAnadirOperador || demasiadosCaracteres;
-    });
-
-    const esNumeroEnteroSimple = /^\d+$/.test(contDisplay) && !esSoloCero;
-    document.getElementById("tpri").disabled = !esNumeroEnteroSimple;
-    document.getElementById("trai").disabled = !esNumeroEnteroSimple;
-
-    const puedeAnadirComa = !ultimoNumero.includes(',') && !tieneOperadorAlFinal && !deshabilitarNumeros;
-    document.getElementById("tcom").disabled = !puedeAnadirComa;
-
-    const esCalculable = /[\+\-x/]/.test(contDisplay) && !tieneOperadorAlFinal && !tieneComaAlFinal;
-    document.getElementById("tcal").disabled = !esCalculable;
-
-    const historyToggle = document.getElementById("history-toggle-btn");
-    const historyPanel = document.getElementById("history-panel");
-    if (historyToggle && historyPanel) {
-        historyToggle.setAttribute('aria-expanded', historyPanel.classList.contains('open').toString());
-    }
-}
-
-/**
- * Muestra la pantalla de salida y oculta el teclado.
- */
-function bajarteclado() {
-    teclado.classList.add('visible-salida-teclado');
-    salida.classList.add('visible-salida-teclado');
-    divVolver.classList.add('visible-salida-nav');
-}
-
-/**
- * Oculta la pantalla de salida y muestra el teclado.
- */
-function subirteclado() {
-    teclado.classList.remove('visible-salida-teclado');
-    salida.classList.remove('visible-salida-teclado');
-    divVolver.classList.remove('visible-salida-nav');
-}
-
-/**
- * Actualiza la visibilidad de los botones de división normal/expandida.
- * @param {boolean} esDivisionValida - Si la operación actual es una división válida.
- */
-function actualizarEstadoDivisionUI(esDivisionValida) {
-    if (esDivisionValida) {
-        botExp.style.display = divext ? "none" : "inline-block";
-        botNor.style.display = divext ? "inline-block" : "none";
-    } else {
-        botExp.style.display = "none";
-        botNor.style.display = "none";
-        lastDivisionState = { operacionInput: '', numerosAR: null, tipo: '' };
-    }
 }
 
 /**
@@ -249,10 +226,8 @@ function calcular() {
 
     const operador = operadorMatch[0];
     const numerosAR = parsearNumeros(entrada, operador);
-    let calculationError = false;
-
+    
     bajarteclado();
-
     requestAnimationFrame(() => {
         salida.innerHTML = "";
         switch (operador) {
@@ -263,51 +238,94 @@ function calcular() {
                 lastDivisionState = { operacionInput: entrada, numerosAR, tipo: 'division' };
                 divext ? divideExt(numerosAR) : divide(numerosAR);
                 break;
-            default:
-                salida.innerHTML = errorMessages.invalidOperation;
+            default: salida.innerHTML = errorMessages.invalidOperation;
         }
-
-        if (salida.innerHTML.includes("<p class='error'>")) {
-            calculationError = true;
-        }
-
+        
+        const calculationError = salida.querySelector('.error');
         if (operador === '/' && !calculationError) {
             actualizarEstadoDivisionUI(true);
         } else {
             actualizarEstadoDivisionUI(false);
         }
-
         if (!calculationError) {
             HistoryManager.add({ input: entrada, visualHtml: salida.innerHTML });
         }
-        activadoBotones(display.innerHTML);
     });
 }
 
 /**
  * Cambia entre la vista de división normal y expandida.
- * @param {boolean} esExpandida - Si se debe mostrar la vista expandida.
+ * @param {boolean} esExpandida
  */
 function divideExpandida(esExpandida) {
     divext = esExpandida;
     actualizarEstadoDivisionUI(true);
-
     bajarteclado();
-
     requestAnimationFrame(() => {
         if (!lastDivisionState.numerosAR || lastDivisionState.tipo !== 'division') {
             salida.innerHTML = errorMessages.noDivisionCalculated;
             return;
         }
         salida.innerHTML = "";
-        if (divext) {
-            divideExt(lastDivisionState.numerosAR);
-        } else {
-            divide(lastDivisionState.numerosAR);
-        }
+        divext ? divideExt(lastDivisionState.numerosAR) : divide(lastDivisionState.numerosAR);
     });
 }
 
+// =======================================================
+// --- FUNCIONES DE UI ---
+// =======================================================
 
-// Iniciar la aplicación cuando el DOM esté completamente cargado.
+function subirteclado() {
+    teclado.classList.remove('visible-salida-teclado');
+    salida.classList.remove('visible-salida-teclado');
+    divVolver.classList.remove('visible-salida-nav');
+}
+
+function bajarteclado() {
+    teclado.classList.add('visible-salida-teclado');
+    salida.classList.add('visible-salida-teclado');
+    divVolver.classList.add('visible-salida-nav');
+}
+
+function actualizarEstadoDivisionUI(esDivisionValida) {
+    if (esDivisionValida) {
+        botExp.style.display = divext ? "none" : "inline-block";
+        botNor.style.display = divext ? "inline-block" : "none";
+    } else {
+        botExp.style.display = "none";
+        botNor.style.display = "none";
+        lastDivisionState = { operacionInput: '', numerosAR: null, tipo: '' };
+    }
+}
+
+function activadoBotones(contDisplay) {
+    const esSoloCero = contDisplay === '0';
+    const tieneOperadorAlFinal = /[\+\-x/]$/.test(contDisplay);
+    const tieneComaAlFinal = /,$/.test(contDisplay);
+    const partes = contDisplay.split(/[\+\-x/]/);
+    const ultimoNumero = partes[partes.length - 1];
+    const demasiadosCaracteres = contDisplay.length >= 21;
+    const ultimoNumeroDemasiadoLargo = ultimoNumero.length >= 15;
+    const deshabilitarNumeros = demasiadosCaracteres || ultimoNumeroDemasiadoLargo;
+
+    ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'].forEach(id => document.getElementById(id).disabled = deshabilitarNumeros);
+    const puedeAnadirOperador = !esSoloCero && !tieneOperadorAlFinal && !tieneComaAlFinal;
+    ['tmas', 'tmen', 'tpor', 'tdiv'].forEach(id => document.getElementById(id).disabled = !puedeAnadirOperador || demasiadosCaracteres);
+    const esNumeroEnteroSimple = /^\d+$/.test(contDisplay) && !esSoloCero;
+    document.getElementById("tpri").disabled = !esNumeroEnteroSimple;
+    document.getElementById("trai").disabled = !esNumeroEnteroSimple;
+    const puedeAnadirComa = !ultimoNumero.includes(',') && !tieneOperadorAlFinal && !deshabilitarNumeros;
+    document.getElementById("tcom").disabled = !puedeAnadirComa;
+    const esCalculable = /[\+\-x/]/.test(contDisplay) && !tieneOperadorAlFinal && !tieneComaAlFinal;
+    document.getElementById("tcal").disabled = !esCalculable;
+    const historyToggle = document.getElementById("history-toggle-btn");
+    const historyPanel = document.getElementById("history-panel");
+    if (historyToggle && historyPanel) {
+        historyToggle.setAttribute('aria-expanded', historyPanel.classList.contains('open').toString());
+    }
+}
+
+// =======================================================
+// --- PUNTO DE ENTRADA ---
+// =======================================================
 document.addEventListener('DOMContentLoaded', alCargar);
