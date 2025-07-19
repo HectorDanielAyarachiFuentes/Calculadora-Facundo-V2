@@ -1,66 +1,39 @@
-// =======================================================
-// --- operations/utils/dom-helpers.js (VERSIÓN FINAL COMPLETA Y CORREGIDA) ---
-// Única fuente de verdad para crear elementos visuales.
-// =======================================================
+// operations/utils/dom-helpers.js (VERSIÓN DEFINITIVA Y CORREGIDA PARA ALINEAMIENTO)
 "use strict";
 
-/**
- * Función de utilidad para crear una pausa en funciones asíncronas.
- * @param {number} ms - Milisegundos a esperar.
- * @returns {Promise<void>}
- */
 export const esperar = ms => new Promise(res => setTimeout(res, ms));
 
-/**
- * Crea un elemento <div> genérico para el grid de operaciones.
- * @param {string} classNames - Una o más clases CSS separadas por espacios.
- * @param {string} content - El contenido de texto.
- * @param {object} styles - Estilos en línea (left, top, width, height, etc.).
- * @returns {HTMLDivElement} El elemento <div> creado.
- */
 export function crearCelda(classNames, content, styles) {
     const celda = document.createElement('div');
     celda.className = classNames;
     celda.textContent = content;
+    
+    celda.style.position = "absolute"; 
+    
+    // Aplicar estilos pasados primero
     Object.assign(celda.style, styles);
 
-    // --- ¡LA LÍNEA CLAVE RESTAURADA! ---
-    // Asegura que la celda pueda ser posicionada con left/top
-    celda.style.position = "absolute"; 
-
-    // Centrado vertical robusto
-    if (styles.height) {
-        celda.style.lineHeight = styles.height;
+    // LÓGICA DE AJUSTE CLAVE PARA ALINEAR EL TEXTO VISUALMENTE CON EL TOP DEL DIV
+    if (classNames.includes("output-grid__cell") && styles.top && styles.height && styles.fontSize) {
+        const cellHeight = parseFloat(styles.height); 
+        const fontSize = parseFloat(styles.fontSize); 
+        
+        const verticalCenteringOffset = (cellHeight - fontSize) / 2;
+        
+        const currentTop = parseFloat(celda.style.top); 
+        celda.style.top = `${currentTop - verticalCenteringOffset}px`;
     }
     
     return celda;
 }
 
-/**
- * Crea una celda con animación.
- * @param {string} classNames - Clases CSS.
- * @param {string} content - Contenido.
- * @param {object} styles - Estilos.
- * @param {number} delay - Retraso de animación en ms.
- * @returns {HTMLDivElement} El elemento <div> animado.
- */
 export function crearCeldaAnimada(classNames, content, styles, delay = 0) {
-    const celda = crearCelda(classNames, content, styles); // Reutiliza la función base
-    
+    const celda = crearCelda(classNames, content, styles); 
     celda.classList.add('animate-fade-in-scale');
     celda.style.animationDelay = `${delay}ms`;
-    
     return celda;
 }
 
-/**
- * Crea una flecha SVG animada para visualizar las "llevadas".
- * @param {number} left - Posición horizontal.
- * @param {number} top - Posición vertical.
- * @param {number} width - Ancho del SVG.
- * @param {number} height - Alto del SVG.
- * @returns {SVGElement} El elemento SVG de la flecha animada.
- */
 export function crearFlechaLlevada(left, top, width, height) {
     const svgNS = "http://www.w3.org/2000/svg";
     const s = document.createElementNS(svgNS, "svg");
@@ -112,18 +85,12 @@ export function crearFlechaLlevada(left, top, width, height) {
     return s;
 }
 
-/**
- * Crea y devuelve un elemento <p> con el mensaje de error estilizado.
- * @param {string} message - El texto del mensaje de error.
- * @returns {HTMLParagraphElement} El elemento <p> del mensaje de error.
- */
 export function crearMensajeError(message) {
     const errorMessageElement = document.createElement('p');
-    errorMessageElement.className = 'output-screen__error-message'; // Clase BEM
-    errorMessageElement.innerHTML = message; // Usamos innerHTML para permitir negritas, etc.
+    errorMessageElement.className = 'output-screen__error-message'; 
+    errorMessageElement.innerHTML = message; 
     
-    // Estos estilos aseguran que el mensaje ocupe el espacio y se centre
-    errorMessageElement.style.position = 'absolute'; // Usamos absolute aquí porque el contenedor principal (salida) espera esto
+    errorMessageElement.style.position = 'absolute'; 
     errorMessageElement.style.width = '100%';
     errorMessageElement.style.height = '100%';
     errorMessageElement.style.display = 'flex';
