@@ -259,12 +259,37 @@ header .subtitle a:hover {
 .history-item-highlight { animation: highlight 1s ease-in-out; }
 @keyframes highlight { 0% { background-color: rgba(76, 175, 80, 0.4); } 100% { background-color: transparent; } }
 
-/* --- Media Queries --- */
+/* ============================================== */
+/* --- DISEÑO RESPONSIVE PARA MÓVILES --- */
+/* ============================================== */
 @media (max-width: 600px) {
-    .history-toggle-btn { top: 10px; right: 10px; width: 45px; height: 45px; }
-    .history-toggle-btn svg { width: 24px; height: 24px; }
-    .history-panel { width: 100vw; }
+    body { padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px); }
+    #contenedor { width: 100% !important; max-width: none !important; }
+    #cuerpoteclado { width: 100% !important; }
+
+    header h1 { font-size: 12vw !important; letter-spacing: 1px !important; }
+    header .subtitle { font-size: 3.5vw !important; }
+    #display { font-size: 10vw !important; padding: 15px; }
+    #teclado button { font-size: 6vw; }
+    #volver { font-size: 7vw !important; }
+    #botexp, #botnor { font-size: 3.5vw !important; padding: 8px; }
+    .error { font-size: 4.5vw !important; padding-top: 25%; }
+    #salida { font-size: 5vw !important; }
+    .caja, .caja2, .caja3, .caja4 { font-size: inherit !important; }
 }
+
+@media (max-width: 400px) {
+    body { padding: 8px env(safe-area-inset-right, 8px) 8px env(safe-area-inset-left, 8px); }
+    header { margin-bottom: 15px; }
+    header h1 { font-size: 10vw !important; }
+    header .subtitle { font-size: 3.2vw !important; margin-top: 10px; }
+    #display { font-size: 9.5vw !important; padding: 12px; min-height: 50px; }
+    #teclado button { font-size: 5.5vw; }
+    #volver { font-size: 6vw !important; }
+    #botexp, #botnor { font-size: 3.2vw !important; padding: 7px; }
+    .error { font-size: 4vw !important; }
+}
+
 
 /* --- Animación Arcoíris Optimizada --- */
 @keyframes arcoiris {
