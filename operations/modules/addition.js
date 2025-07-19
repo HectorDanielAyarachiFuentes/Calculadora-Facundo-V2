@@ -1,11 +1,43 @@
 // =======================================================
-// --- operations/modules/addition.js (VERSIÓN FINAL CORREGIDA) ---
+// --- operations/modules/addition.js (VERSIÓN FINAL Y DEFINITIVA) ---
 // =======================================================
 "use strict";
 
 import { calculateLayout } from '../utils/layout-calculator.js';
-import { crearCelda, crearFlechaLlevada } from '../utils/dom-helpers.js';
+import { crearCelda, crearFlechaLlevada, esperar } from '../utils/dom-helpers.js';
 import { salida } from '../../config.js';
+
+let sumaAnimationLoopId = null;
+
+async function startCarryLoopAnimation(elements) {
+    if (sumaAnimationLoopId) clearTimeout(sumaAnimationLoopId);
+    if (elements.length === 0) return;
+
+    const loop = async () => {
+        for (const element of elements) {
+            if (element.tagName.toLowerCase() === 'svg') {
+                const path = element.querySelector('path[d^="M"]');
+                if (path) {
+                    const length = path.getTotalLength();
+                    path.style.transition = 'none';
+                    path.style.strokeDashoffset = length;
+                    path.offsetHeight;
+                    path.style.transition = 'stroke-dashoffset .8s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                    path.style.strokeDashoffset = '0';
+                }
+            } else {
+                element.classList.add('pulse');
+                setTimeout(() => element.classList.remove('pulse'), 500);
+            }
+            await esperar(200);
+        }
+        
+        sumaAnimationLoopId = setTimeout(loop, 3000);
+    };
+
+    loop();
+}
+
 
 /**
  * Realiza y visualiza la operación de suma de varios operandos.
@@ -14,107 +46,82 @@ import { salida } from '../../config.js';
 export function suma(numerosAR) {
     salida.innerHTML = "";
     const fragment = document.createDocumentFragment();
+    if (sumaAnimationLoopId) clearTimeout(sumaAnimationLoopId);
 
     // --- 1. CÁLCULOS DE LA OPERACIÓN ---
     let maxDecimales = 0;
     numerosAR.forEach(n => maxDecimales = Math.max(maxDecimales, n[1]));
 
     const operandosBigIntStr = numerosAR.map(n => n[0].padEnd(n[0].length + maxDecimales - n[1], '0'));
-    const longitudMaxOperandos = Math.max(...operandosBigIntStr.map(n => n.length));
-    const operandosPadded = operandosBigIntStr.map(n => n.padStart(longitudMaxOperandos, '0'));
-
+    let longitudMaxOperandos = Math.max(...operandosBigIntStr.map(n => n.length));
+    
     let total = 0n;
-    operandosPadded.forEach(n => total += BigInt(n));
+    operandosBigIntStr.forEach(n => total += BigInt(n));
     let resultadoRaw = total.toString();
+    
+    // La longitud máxima ahora se basa en el resultado si es más largo
+    const longitudMaximaTotal = Math.max(longitudMaxOperandos, resultadoRaw.length);
 
-    let resultadoConComa = resultadoRaw;
-    if (maxDecimales > 0) {
-        if (resultadoConComa.length <= maxDecimales) {
-            resultadoConComa = '0'.repeat(maxDecimales - resultadoConComa.length + 1) + resultadoConComa;
-        }
-        resultadoConComa = resultadoConComa.slice(0, resultadoConComa.length - maxDecimales) + ',' + resultadoConComa.slice(resultadoConComa.length - maxDecimales);
-    }
-    if (resultadoConComa.includes(',')) {
-        resultadoConComa = resultadoConComa.replace(/0+$/, '').replace(/,$/, '');
-    }
+    const operandosPadded = operandosBigIntStr.map(n => n.padStart(longitudMaximaTotal, '0'));
+    const resultadoPadded = resultadoRaw.padStart(longitudMaximaTotal, '0');
 
     // --- 2. CÁLCULO DEL LAYOUT ---
-    let maxDisplayLength = 0;
-    numerosAR.forEach((n) => {
-        let dispNum = n[0];
-        if (n[1] > 0) dispNum = dispNum.slice(0, dispNum.length - n[1]) + ',' + dispNum.slice(dispNum.length - n[1]);
-        maxDisplayLength = Math.max(maxDisplayLength, dispNum.length);
-    });
-    maxDisplayLength = Math.max(maxDisplayLength, resultadoConComa.length);
+    const anchoGridEnCeldas = longitudMaximaTotal + 1; // +1 para el signo '+'
+    const altoGridEnCeldas = numerosAR.length + 3; // Operandos + llevadas + línea + resultado
     
-    const anchoGridEnCeldas = maxDisplayLength + 1;
-    const altoGridEnCeldas = numerosAR.length + 3;
-    
-    // CORRECCIÓN: Usamos las variables correctas devueltas por calculateLayout
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, anchoGridEnCeldas, altoGridEnCeldas);
     
     // --- 3. LÓGICA DE VISUALIZACIÓN ---
-
-    // Calcular y dibujar las llevadas
-    let llevadas = {};
+    const llevadas = {};
     let carry = 0;
-    for (let i = longitudMaxOperandos - 1; i >= 0; i--) {
+    // --- ¡CORRECCIÓN CLAVE EN EL BUCLE DE LLEVADAS! ---
+    // El bucle ahora itera sobre la longitud MÁXIMA total.
+    for (let i = longitudMaximaTotal - 1; i >= 0; i--) {
         let sumaColumna = carry;
         operandosPadded.forEach(n => sumaColumna += parseInt(n[i] || '0'));
         carry = Math.floor(sumaColumna / 10);
+        
         if (carry > 0) {
-            let posLlevada = i - 1 + (maxDisplayLength - longitudMaxOperandos);
-            if (maxDecimales > 0 && i < longitudMaxOperandos - maxDecimales) posLlevada--;
-            if (posLlevada >= 0) llevadas[posLlevada] = carry.toString();
+            // La clave es la columna (desde la izquierda) donde va la llevada
+            llevadas[i - 1] = carry.toString();
         }
     }
 
-   // Y reemplázalo con este bloque corregido:
-for (const pos in llevadas) {
-    let col = parseInt(pos);
-    if (maxDecimales > 0 && col >= maxDisplayLength - maxDecimales) col++;
-    
-    let leftPos = offsetHorizontal + (col + 1) * tamCel + paddingLeft;
-    let topPosLlevada = paddingTop + 0.1 * tamCel;
-    
-    // Dibujar el número de la llevada
-    fragment.appendChild(
-        crearCelda(
-            "output-grid__cell output-grid__cell--resto", 
-            llevadas[pos], 
+    // Dibujar las llevadas y las flechas
+    for (const posStr in llevadas) {
+        const col = parseInt(posStr);
+        if (col < -1) continue; // Ignorar llevadas fuera del área visible
+        const carryStr = llevadas[posStr];
+        
+        const leftBase = offsetHorizontal + (col + 1) * tamCel + paddingLeft;
+        const topPosLlevada = paddingTop + 0.1 * tamCel;
+        
+        const numeroLlevada = crearCelda(
+            "output-grid__cell output-grid__cell--resto loop-anim-element",
+            carryStr, 
             { 
-                left: `${leftPos}px`, 
-                top: `${topPosLlevada}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente * 0.7}px`, 
-                textAlign: 'center' 
+                left: `${leftBase}px`, top: `${topPosLlevada}px`, width: `${tamCel * carryStr.length}px`, 
+                height: `${tamCel}px`, fontSize: `${tamFuente * 0.7}px`, textAlign: 'center' 
             }
-        )
-    );
+        );
+        fragment.appendChild(numeroLlevada);
 
-    // --- ¡AQUÍ ESTÁ LA MAGIA! ---
-    // Descomentamos y ajustamos la llamada para dibujar la flecha.
-    const topFlecha = topPosLlevada + tamCel * 0.8;
-    const altoFlecha = (paddingTop + 1.5 * tamCel) - topFlecha; // Calcula la altura hasta la primera fila de números
-    const anchoFlecha = tamCel * 0.8;
-    const leftFlecha = leftPos + (tamCel - anchoFlecha) / 2; // Centra la flecha en la celda
+        const topFlecha = topPosLlevada + tamCel * 0.8;
+        const altoFlecha = (paddingTop + 1.5 * tamCel) - topFlecha;
+        const anchoFlecha = tamCel * 0.8;
+        const leftFlecha = leftBase + (tamCel * carryStr.length - anchoFlecha); 
 
-    fragment.appendChild(
-        crearFlechaLlevada(leftFlecha, topFlecha, anchoFlecha, altoFlecha)
-    );
-}
-    // Dibujar los operandos
+        const flecha = crearFlechaLlevada(leftFlecha, topFlecha, anchoFlecha, altoFlecha);
+        flecha.classList.add('loop-anim-element');
+        fragment.appendChild(flecha);
+    }
+
+    // Dibujar los operandos, alineados a la derecha
     let yPos = paddingTop + 1.5 * tamCel;
-    numerosAR.forEach((n) => {
-        let displayNum = n[0];
-        if (n[1] > 0) displayNum = displayNum.slice(0, displayNum.length - n[1]) + ',' + displayNum.slice(displayNum.length - n[1]);
-        let numOffset = maxDisplayLength - displayNum.length;
-        for (let i = 0; i < displayNum.length; i++) {
-            // CORRECCIÓN: Usamos paddingLeft
-            let cellLeft = offsetHorizontal + (numOffset + i + 1) * tamCel + paddingLeft;
-            // Usamos las nuevas clases CSS
-            fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", displayNum[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
+    operandosPadded.forEach((n) => {
+        for (let i = 0; i < n.length; i++) {
+            let cellLeft = offsetHorizontal + (i + 1) * tamCel + paddingLeft;
+            fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", n[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
         }
         yPos += tamCel;
     });
@@ -129,11 +136,13 @@ for (const pos in llevadas) {
     fragment.appendChild(crearCelda("output-grid__line", "", { left: `${lineLeft}px`, top: `${yPos}px`, width: `${lineWidth}px`, height: `2px` }));
     
     yPos += tamCel * 0.2;
-    let resultOffset = maxDisplayLength - resultadoConComa.length;
-    for (let i = 0; i < resultadoConComa.length; i++) {
-        let cellLeft = offsetHorizontal + (resultOffset + i + 1) * tamCel + paddingLeft;
-        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--cociente", resultadoConComa[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
+    for (let i = 0; i < resultadoPadded.length; i++) {
+        let cellLeft = offsetHorizontal + (i + 1) * tamCel + paddingLeft;
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--cociente", resultadoPadded[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
 
     salida.appendChild(fragment);
+    
+    const elementsToLoop = salida.querySelectorAll('.loop-anim-element');
+    startCarryLoopAnimation(elementsToLoop);
 }
