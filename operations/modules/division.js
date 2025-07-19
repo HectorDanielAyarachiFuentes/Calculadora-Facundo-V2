@@ -1,5 +1,5 @@
 // =======================================================
-// --- operations/modules/division.js (VERSIÓN FINAL Y DEFINITIVA) ---
+// --- operations/modules/division.js (VERSIÓN FINAL CON GALERA CORREGIDA) ---
 // Contiene la lógica y la visualización para la operación de división.
 // `divide`: Muestra el proceso completo de la división larga (extendida).
 // `divideExt`: Muestra el layout clásico de la división finalizada (usual).
@@ -89,9 +89,16 @@ function drawHeader(fragment, { divisorStr, cociente, tamCel, tamFuente, offsetH
     const xEndOfRightBlock = xBloqueDerecho + anchoDerecho * tamCel;
     const anchoLineasHorizontales = xEndOfRightBlock - xLineaVertical;
 
+    // --- ¡CORRECCIÓN CLAVE! AÑADIR LA LÍNEA VERTICAL DE LA GALERA ---
+    // Esta línea forma la "caja" junto con la línea horizontal.
     fragment.appendChild(crearCelda("output-grid__line", "", {
-        left: `${xLineaVertical}px`, top: `${yPosTopRow}px`, width: `2px`, height: `${galeraHeight}px`
+        left: `${xLineaVertical}px`, 
+        top: `${yPosTopRow}px`, // Empieza en la fila del divisor
+        width: `2px`, 
+        height: `${tamCel}px`  // Solo tiene la altura de una fila
     }));
+    
+    // Línea horizontal (ENTRE divisor y cociente)
     fragment.appendChild(crearCelda("output-grid__line", "", {
         left: `${xLineaVertical}px`, top: `${yPosCociente}px`, width: `${anchoLineasHorizontales}px`, height: `2px`
     }));
@@ -193,20 +200,19 @@ export function divideExt(numerosAR) {
         return; 
     }
 
-    // --- LÓGICA CORREGIDA PARA VISTA SIMPLE ---
     const cociente = (BigInt(dividendoStr) / BigInt(divisorStr)).toString();
     const restoFinal = (BigInt(dividendoStr) % BigInt(divisorStr)).toString();
 
-    const anchoIzquierdo = dividendoStr.length; // No necesita columna de signo
+    const anchoIzquierdo = dividendoStr.length; 
     const anchoDerecho = Math.max(divisorStr.length, cociente.length) + 1; 
     const separatorWidth = 2; 
     
     const totalCols = anchoIzquierdo + separatorWidth + anchoDerecho;
-    const totalRows = 3; // Dividendo/Divisor, Cociente, Resto
+    const totalRows = 3;
     
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, totalCols, totalRows);
     const xBloqueDerecho = offsetHorizontal + (anchoIzquierdo + separatorWidth) * tamCel + paddingLeft;
-    const galeraHeight = 2 * tamCel; // Galera solo cubre las dos filas del header
+    const galeraHeight = 2 * tamCel; 
 
     // Dibujar Header
     drawHeader(fragment, { 
@@ -223,7 +229,7 @@ export function divideExt(numerosAR) {
     }
 
     // Dibujar resto final
-    const yResto = paddingTop + 2 * tamCel; // Una fila debajo del cociente
+    const yResto = paddingTop + 2 * tamCel; 
     const xResto = offsetHorizontal + (dividendoStr.length - restoFinal.length) * tamCel + paddingLeft;
     for (let i = 0; i < restoFinal.length; i++) {
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--resto", restoFinal[i], {
