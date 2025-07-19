@@ -263,3 +263,32 @@ header .subtitle a:hover {
     .history-toggle-btn svg { width: 24px; height: 24px; }
     .history-panel { width: 100vw; }
 }
+
+
+/* --- Animación Arcoíris Optimizada --- */
+@keyframes arcoiris {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+}
+/* En tu style.css, busca la regla .keyboard__button y sus pseudo-clases */
+.keyboard__button {
+    /* ... tus estilos existentes ... */
+    position: relative; /* Asegura que el background-position funcione bien */
+    overflow: hidden; /* Corta el gradiente fuera del botón */
+}
+
+.keyboard__button:not(:disabled):hover {
+    background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+    background-size: 200% 200%; /* Tamaño para que el gradiente se deslice */
+    animation: arcoiris 2s linear infinite; /* Aplica la animación */
+    transform: scale(1.05); /* El efecto de escala al pasar el ratón */
+}
+
+.keyboard__button:disabled {
+    background-color: var(--btn-disabled-bg) !important;
+    color: var(--btn-disabled-text);
+    cursor: not-allowed;
+    animation: none !important; /* Deshabilita la animación si está deshabilitado */
+    transform: none !important; /* Deshabilita el transform si está deshabilitado */
+}
