@@ -1,5 +1,5 @@
 // =======================================================
-// --- main.js (VERSIÓN CON CORRECCIÓN ASÍNCRONA) ---
+// --- main.js (VERSIÓN FINAL Y CORREGIDA) ---
 // =======================================================
 "use strict";
 
@@ -45,9 +45,9 @@ function alCargar() {
     contenedor.style.opacity = "1";
     display.innerHTML = '0';
     activadoBotones('0');
-    HistoryManager.init(); 
-    HistoryPanel.init();    
-    actualizarEstadoDivisionUI(false); 
+    HistoryManager.init();
+    HistoryPanel.init();
+    actualizarEstadoDivisionUI(false);
     setupEventListeners();
 }
 
@@ -62,7 +62,7 @@ function setupEventListeners() {
     window.addEventListener('resize', alCargar);
 }
 
-// --- MANEJADORES DE ACCIONES (sin cambios) ---
+// --- MANEJADORES DE ACCIONES ---
 function handleButtonClick(event) {
     const button = event.target.closest('button');
     if (!button || button.disabled) return;
@@ -93,33 +93,78 @@ function handleKeyboardInput(event) {
     else if (key === 'Delete' || key === 'Escape') escribir('c');
 }
 
-// ¡CAMBIO SUTIL AQUÍ! Hacemos que handleAction sea async para que pueda usar await.
+// ¡¡¡ AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL !!!
 async function handleAction(action) {
     switch (action) {
-        case 'view-screen': bajarteclado(); break;
-        // La llamada a calcular ya no necesita ser 'await' aquí, pero la función debe ser async
-        // para manejar los casos de 'primos' y 'raiz' de manera más limpia si fueran async.
-        case 'calculate': await calcular(); break; 
-        case 'clear': escribir('c'); break;
-        case 'delete': escribir('del'); break;
-        case 'hide-screen': subirteclado(); break;
-        case 'divide-expanded': divideExpandida(true); break;
-        case 'divide-normal': divideExpandida(false); break;
+        case 'view-screen':
+            bajarteclado();
+            break;
+        case 'calculate':
+            await calcular();
+            break;
+        case 'clear':
+            escribir('c');
+            break;
+        case 'delete':
+            escribir('del');
+            break;
+        case 'hide-screen':
+            subirteclado();
+            break;
+        case 'divide-expanded':
+            divideExpandida(true);
+            break;
+        case 'divide-normal':
+            divideExpandida(false);
+            break;
+
+        // --- CÓDIGO AÑADIDO PARA FACTORES PRIMOS ---
         case 'primos':
             bajarteclado();
-            // ... (el resto del código sin cambios)
+            salida.innerHTML = ""; // Limpiar pantalla de salida
+            const numeroPrimos = display.innerHTML;
+            try {
+                await desFacPri(numeroPrimos); // Llamar a la función de cálculo
+                // Añadir al historial si no hay error
+                if (!salida.querySelector('.output-screen__error-message')) {
+                    HistoryManager.add({
+                        input: `factores(${numeroPrimos})`,
+                        visualHtml: salida.innerHTML
+                    });
+                }
+            } catch (error) {
+                console.error("Error al calcular factores primos:", error);
+                salida.appendChild(crearMensajeError(errorMessages.genericError));
+            }
             break;
+
+        // --- CÓDIGO AÑADIDO PARA RAÍZ CUADRADA ---
         case 'raiz':
             bajarteclado();
-            // ... (el resto del código sin cambios)
+            salida.innerHTML = ""; // Limpiar pantalla de salida
+            const numeroRaiz = display.innerHTML;
+            try {
+                await raizCuadrada(numeroRaiz); // Llamar a la función de cálculo
+                // Añadir al historial si no hay error
+                if (!salida.querySelector('.output-screen__error-message')) {
+                    HistoryManager.add({
+                        input: `√(${numeroRaiz})`,
+                        visualHtml: salida.innerHTML
+                    });
+                }
+            } catch (error) {
+                console.error("Error al calcular la raíz cuadrada:", error);
+                salida.appendChild(crearMensajeError(errorMessages.genericError));
+            }
             break;
-        default: console.warn(`Acción desconocida: ${action}`);
+
+        default:
+            console.warn(`Acción desconocida: ${action}`);
     }
 }
 
-// --- LÓGICA DE LA APLICACIÓN (sin cambios en 'escribir') ---
+// --- LÓGICA DE LA APLICACIÓN (sin cambios) ---
 function escribir(t) {
-    // ... (función escribir sin cambios)
     const currentDisplay = display.innerHTML;
     const isOperator = ['+', '-', 'x', '/'].includes(t);
     const hasBinaryOperatorInExpression = /[+\-x/]/.test(currentDisplay.slice(currentDisplay.startsWith('-') ? 1 : 0).replace(/^[0-9,]+/, ''));
@@ -160,17 +205,12 @@ function escribir(t) {
     actualizarEstadoDivisionUI(false); 
 }
 
-/**
- * Función principal que orquesta el cálculo.
- * Analiza la entrada, llama a la operación correspondiente y actualiza el historial.
- */
-// ¡CAMBIO 1: La función 'calcular' ahora es 'async'!
 async function calcular() {
     const entrada = display.innerHTML;
     const operadorMatch = entrada.match(/[\+\-x/]/);
 
     if (!operadorMatch || !/^-?[0-9,]+\s*[+\-x/]\s*(-?[0-9,]+)?$/.test(entrada) || ['+', '-', 'x', '/'].includes(entrada.slice(-1)) || entrada.endsWith(',')) { 
-        salida.innerHTML = ''; // Limpiamos para evitar contenido viejo
+        salida.innerHTML = '';
         salida.appendChild(crearMensajeError(errorMessages.invalidOperation));
         bajarteclado();
         actualizarEstadoDivisionUI(false);
@@ -183,13 +223,9 @@ async function calcular() {
     bajarteclado();
     salida.innerHTML = "";
 
-    // Eliminamos el requestAnimationFrame que envolvía esta lógica.
-    // async/await maneja el flujo de forma más limpia y directa.
-
     switch (operador) {
-        // ¡CAMBIO 2: 'await' espera a que la animación de la suma termine!
         case "+": await suma(numerosAR); break;
-        case "-": resta(numerosAR); break; // Asumimos que estas son síncronas
+        case "-": resta(numerosAR); break;
         case "x": multiplica(numerosAR); break;
         case "/":
             lastDivisionState = { operacionInput: entrada, numerosAR, tipo: 'division' };
@@ -199,7 +235,6 @@ async function calcular() {
             salida.appendChild(crearMensajeError(errorMessages.invalidOperation));
     }
     
-    // Este código ahora se ejecuta DESPUÉS de que 'await suma(numerosAR)' ha terminado.
     const calculationError = salida.querySelector('.output-screen__error-message');
     if (operador === '/' && !calculationError) {
         actualizarEstadoDivisionUI(true);
@@ -208,7 +243,6 @@ async function calcular() {
     }
 
     if (!calculationError) {
-        // 'salida.innerHTML' ahora contiene la "foto" final y correcta de la operación.
         HistoryManager.add({ input: entrada, visualHtml: salida.innerHTML });
     }
     activadoBotones(display.innerHTML);
@@ -216,7 +250,6 @@ async function calcular() {
 
 // --- El resto del archivo sin cambios ---
 function divideExpandida(esExpandida) {
-    // ...
     divext = esExpandida;
     actualizarEstadoDivisionUI(true); 
     bajarteclado(); 
@@ -232,7 +265,6 @@ function divideExpandida(esExpandida) {
 }
 
 function subirteclado() {
-    // ...
     teclado.classList.remove('keyboard--hidden');
     salida.classList.remove('output-screen--visible');
     divVolver.classList.remove('bottom-nav--visible');
@@ -240,14 +272,12 @@ function subirteclado() {
 }
 
 function bajarteclado() {
-    // ...
     teclado.classList.add('keyboard--hidden');
     salida.classList.add('output-screen--visible');
     divVolver.classList.add('bottom-nav--visible');
 }
 
 function actualizarEstadoDivisionUI(esDivisionValida) {
-    // ...
     if (esDivisionValida) {
         botExp.style.display = divext ? "none" : "inline-block";
         botNor.style.display = divext ? "inline-block" : "none";
@@ -260,7 +290,6 @@ function actualizarEstadoDivisionUI(esDivisionValida) {
 }
 
 function activadoBotones(contDisplay) {
-    // ...
     const esSoloCero = contDisplay === '0';
     const hasBinaryOperatorInExpression = /[+\-x/]/.test(contDisplay.slice(contDisplay.startsWith('-') ? 1 : 0).replace(/^[0-9,]+/, ''));
     
