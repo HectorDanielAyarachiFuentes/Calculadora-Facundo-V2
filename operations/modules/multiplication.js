@@ -5,6 +5,8 @@
 
 import { calculateLayout } from '../utils/layout-calculator.js';
 import { crearCelda } from '../utils/dom-helpers.js';
+// --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+// Añadimos la importación correcta desde config.js
 import { salida, errorMessages } from '../../config.js';
 
 /**
@@ -50,29 +52,22 @@ export function multiplica(numerosAR) {
     // --- 3. LÓGICA DE VISUALIZACIÓN ---
     let yPos = paddingTop;
 
-    // Dibujar multiplicando (primer número)
     for (let i = 0; i < num1Display.length; i++) {
         const leftPos = offsetHorizontal + (anchuraEnCeldas - num1Display.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", num1Display[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
 
-    // Dibujar multiplicador (segundo número)
     yPos += tamCel;
     const signLeft = offsetHorizontal + (anchuraEnCeldas - num2Display.length - 1) * tamCel + paddingLeft;
-    // CORRECCIÓN: Usamos las nuevas clases CSS
     fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "x", { left: `${signLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     for (let i = 0; i < num2Display.length; i++) {
         const leftPos = offsetHorizontal + (anchuraEnCeldas - num2Display.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", num2Display[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
 
-    // Dibujar línea y productos parciales
     yPos += tamCel;
     const line1Left = offsetHorizontal + (anchuraEnCeldas - Math.max(num1Display.length, num2Display.length + 1)) * tamCel + paddingLeft;
     const line1Width = Math.max(num1Display.length, num2Display.length + 1) * tamCel;
-    // CORRECCIÓN: Usamos la nueva clase CSS
     fragment.appendChild(crearCelda("output-grid__line", "", { left: `${line1Left}px`, top: `${yPos}px`, width: `${line1Width}px`, height: `2px` }));
     
     if (num2.length > 1) {
@@ -80,24 +75,26 @@ export function multiplica(numerosAR) {
         for (let i = num2.length - 1; i >= 0; i--) {
             let resultadoFila = (BigInt(num1) * BigInt(num2[i])).toString();
             let colOffset = num2.length - 1 - i;
+            
+            if (i < num2.length - 1) {
+                const signPlusLeft = offsetHorizontal + (anchuraEnCeldas - resultadoFila.length - colOffset - 1) * tamCel + paddingLeft;
+                fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "+", { left: `${signPlusLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
+            }
+
             for (let j = 0; j < resultadoFila.length; j++) {
                 const leftPos = offsetHorizontal + (anchuraEnCeldas - resultadoFila.length - colOffset + j) * tamCel + paddingLeft;
-                // CORRECCIÓN: Usamos las nuevas clases CSS
                 fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", resultadoFila[j], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
             }
             yPos += tamCel;
         }
         const finalLineLeft = offsetHorizontal;
         const totalBlockWidth = anchuraEnCeldas * tamCel;
-        // CORRECCIÓN: Usamos la nueva clase CSS
         fragment.appendChild(crearCelda("output-grid__line", "", { left: `${finalLineLeft}px`, top: `${yPos}px`, width: `${totalBlockWidth}px`, height: `2px` }));
     }
     
-    // Dibujar resultado final
     yPos += tamCel * 0.2;
     for (let i = 0; i < resultadoDisplay.length; i++) {
         const leftPos = offsetHorizontal + (anchuraEnCeldas - resultadoDisplay.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--cociente", resultadoDisplay[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
 
