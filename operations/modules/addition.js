@@ -1,18 +1,11 @@
 // =======================================================
-// --- operations/modules/addition.js ---
-// Contiene la lógica y la visualización para la operación de suma.
+// --- operations/modules/addition.js (VERSIÓN FINAL CORREGIDA) ---
 // =======================================================
 "use strict";
 
 import { calculateLayout } from '../utils/layout-calculator.js';
 import { crearCelda, crearFlechaLlevada } from '../utils/dom-helpers.js';
-
-// Asumimos que `salida` es una variable global accesible.
-// Si no lo es, deberíamos pasarla como parámetro a la función `suma`.
-const salida = document.querySelector("#salida");
-const errorMessages = {
-    // Definir aquí los mensajes de error relevantes si los hubiera
-};
+import { salida } from '../../config.js';
 
 /**
  * Realiza y visualiza la operación de suma de varios operandos.
@@ -54,9 +47,10 @@ export function suma(numerosAR) {
     });
     maxDisplayLength = Math.max(maxDisplayLength, resultadoConComa.length);
     
-    const anchoGridEnCeldas = maxDisplayLength + 1; // +1 para el signo de suma
-    const altoGridEnCeldas = numerosAR.length + 3; // N operandos + llevadas + línea + resultado
-
+    const anchoGridEnCeldas = maxDisplayLength + 1;
+    const altoGridEnCeldas = numerosAR.length + 3;
+    
+    // CORRECCIÓN: Usamos las variables correctas devueltas por calculateLayout
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, anchoGridEnCeldas, altoGridEnCeldas);
     
     // --- 3. LÓGICA DE VISUALIZACIÓN ---
@@ -75,15 +69,41 @@ export function suma(numerosAR) {
         }
     }
 
-    for (const pos in llevadas) {
-        let col = parseInt(pos);
-        if (maxDecimales > 0 && col >= maxDisplayLength - maxDecimales) col++;
-        let leftPos = offsetHorizontal + (col + 1) * tamCel + paddingLeft;
-        let topPosLlevada = paddingTop + 0.1 * tamCel;
-        fragment.appendChild(crearCelda("caja", llevadas[pos], { left: `${leftPos}px`, top: `${topPosLlevada}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente * .7}px`, color: "red", textAlign: 'center' }));
-        // (La lógica de la flecha se podría simplificar o mantener si es necesaria)
-    }
+   // Y reemplázalo con este bloque corregido:
+for (const pos in llevadas) {
+    let col = parseInt(pos);
+    if (maxDecimales > 0 && col >= maxDisplayLength - maxDecimales) col++;
+    
+    let leftPos = offsetHorizontal + (col + 1) * tamCel + paddingLeft;
+    let topPosLlevada = paddingTop + 0.1 * tamCel;
+    
+    // Dibujar el número de la llevada
+    fragment.appendChild(
+        crearCelda(
+            "output-grid__cell output-grid__cell--resto", 
+            llevadas[pos], 
+            { 
+                left: `${leftPos}px`, 
+                top: `${topPosLlevada}px`, 
+                width: `${tamCel}px`, 
+                height: `${tamCel}px`, 
+                fontSize: `${tamFuente * 0.7}px`, 
+                textAlign: 'center' 
+            }
+        )
+    );
 
+    // --- ¡AQUÍ ESTÁ LA MAGIA! ---
+    // Descomentamos y ajustamos la llamada para dibujar la flecha.
+    const topFlecha = topPosLlevada + tamCel * 0.8;
+    const altoFlecha = (paddingTop + 1.5 * tamCel) - topFlecha; // Calcula la altura hasta la primera fila de números
+    const anchoFlecha = tamCel * 0.8;
+    const leftFlecha = leftPos + (tamCel - anchoFlecha) / 2; // Centra la flecha en la celda
+
+    fragment.appendChild(
+        crearFlechaLlevada(leftFlecha, topFlecha, anchoFlecha, altoFlecha)
+    );
+}
     // Dibujar los operandos
     let yPos = paddingTop + 1.5 * tamCel;
     numerosAR.forEach((n) => {
@@ -91,8 +111,10 @@ export function suma(numerosAR) {
         if (n[1] > 0) displayNum = displayNum.slice(0, displayNum.length - n[1]) + ',' + displayNum.slice(displayNum.length - n[1]);
         let numOffset = maxDisplayLength - displayNum.length;
         for (let i = 0; i < displayNum.length; i++) {
+            // CORRECCIÓN: Usamos paddingLeft
             let cellLeft = offsetHorizontal + (numOffset + i + 1) * tamCel + paddingLeft;
-            fragment.appendChild(crearCelda("caja3", displayNum[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`, color: '#ffff00' }));
+            // Usamos las nuevas clases CSS
+            fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", displayNum[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
         }
         yPos += tamCel;
     });
@@ -100,17 +122,17 @@ export function suma(numerosAR) {
     // Dibujar el signo de suma, la línea y el resultado
     const signLeft = offsetHorizontal + paddingLeft;
     const signTop = yPos - tamCel;
-    fragment.appendChild(crearCelda("caja", "+", { left: `${signLeft}px`, top: `${signTop}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`, color: "#ddd", textAlign: 'center' }));
+    fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "+", { left: `${signLeft}px`, top: `${signTop}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`, textAlign: 'center' }));
     
     const lineLeft = offsetHorizontal + tamCel + paddingLeft;
     const lineWidth = (anchoGridEnCeldas - 1) * tamCel;
-    fragment.appendChild(crearCelda("linea", "", { left: `${lineLeft}px`, top: `${yPos}px`, width: `${lineWidth}px`, height: `2px`, backgroundColor: "#ddd" }));
+    fragment.appendChild(crearCelda("output-grid__line", "", { left: `${lineLeft}px`, top: `${yPos}px`, width: `${lineWidth}px`, height: `2px` }));
     
     yPos += tamCel * 0.2;
     let resultOffset = maxDisplayLength - resultadoConComa.length;
     for (let i = 0; i < resultadoConComa.length; i++) {
         let cellLeft = offsetHorizontal + (resultOffset + i + 1) * tamCel + paddingLeft;
-        fragment.appendChild(crearCelda("caja4", resultadoConComa[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`, color: '#00ff00' }));
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--cociente", resultadoConComa[i], { left: `${cellLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     }
 
     salida.appendChild(fragment);
