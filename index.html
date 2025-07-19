@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es-ES">
+<head>
+    <!-- Codificación y diseño responsivo -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- Descripción general del sitio -->
+    <meta name="description"
+        content="La Calculadora de Facundo: tu herramienta web moderna, rápida y con una interfaz atractiva. Resuelve todas tus operaciones matemáticas y explora los algoritmos más frecuentes.">
+
+    <!-- Autor y herramienta de desarrollo -->
+    <meta name="author" content="Hector Daniel Ayarachi Fuentes">
+
+    <!-- Color del tema para navegadores móviles -->
+    <meta name="theme-color" content="#66FF66">
+
+    <!-- Ícono (favicon) optimizado -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='5' y='5' width='90' height='90' rx='15' fill='%2366FF66'/><rect x='25' y='30' width='50' height='10' fill='%23000000'/><rect x='25' y='60' width='50' height='10' fill='%23000000'/></svg>">
+
+    <!-- Título de la página -->
+    <title>Calculadora Facundo 🧮</title>
+
+    <!-- Estilos principales -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Metadatos Open Graph para Facebook y otras redes -->
+    <meta property="og:title" content="Calculadora Facundo 🧮">
+    <meta property="og:description" content="La Calculadora de Facundo: rápida, atractiva y hecha con amor. ¡Ideal para tus cuentas diarias y algoritmos favoritos!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hectordanielayarachifuentes.github.io/CALCULADORA-FACUNDO/">
+    <meta property="og:image" content="https://hectordanielayarachifuentes.github.io/CALCULADORA-FACUNDO/img/Inicio%20de%20calculadora.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Structured Data para SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Calculadora Facundo",
+        "description": "Calculadora web moderna con visualización de algoritmos matemáticos",
+        "url": "https://hectordanielayarachifuentes.github.io/CALCULADORA-FACUNDO/",
+        "author": {
+            "@type": "Person",
+            "name": "Hector Daniel Ayarachi Fuentes"
+        },
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web Browser"
+    }
+    </script>
+</head>
+
+<body>
+    <main id="contenedor" role="main">
+        <header role="banner">
+            <h1>LA<br>CALCULADORA<br>DE <span>FACUNDO</span></h1>
+            <p class="subtitle">Un proyecto de <a href="https://github.com/HectorDanielAyarachiFuentes" target="_blank" rel="noopener">Facundo Killer</a></p>
+        </header>
+
+        <section id="display-section" aria-label="Pantalla de la calculadora">
+            <div id="display" role="textbox" aria-live="polite" aria-label="Pantalla de entrada y resultado actual">0</div>
+        </section>
+
+        <section id="keyboard-section" aria-label="Teclado de la calculadora">
+            <div id="cuerpoteclado">
+                <div id="teclado" role="grid" aria-label="Botones de la calculadora">
+                    <!-- Fila 1 -->
+                    <button id="tpan" class="btn btn--special btn--span-2"
+                            data-action="view-screen"
+                            aria-label="Ver pantalla de resultados visuales"
+                            tabindex="1">Ver<br>Pantalla</button>
+                    <button id="tcal" class="btn btn--equal btn--span-3"
+                            data-action="calculate"
+                            aria-label="Calcular resultado"
+                            tabindex="2">=</button>
+
+                    <!-- Fila 2 -->
+                    <button id="t7" class="btn btn--num"
+                            data-value="7"
+                            aria-label="Número siete"
+                            tabindex="3">7</button>
+                    <button id="t8" class="btn btn--num"
+                            data-value="8"
+                            aria-label="Número ocho"
+                            tabindex="4">8</button>
+                    <button id="t9" class="btn btn--num"
+                            data-value="9"
+                            aria-label="Número nueve"
+                            tabindex="5">9</button>
+                    <button id="tmas" class="btn btn--operator"
+                            data-value="+"
+                            aria-label="Operación suma"
+                            tabindex="6">+</button>
+                    <button id="tmen" class="btn btn--operator"
+                            data-value="-"
+                            aria-label="Operación resta"
+                            tabindex="7">-</button>
+
+                    <!-- Fila 3 -->
+                    <button id="t4" class="btn btn--num"
+                            data-value="4"
+                            aria-label="Número cuatro"
+                            tabindex="8">4</button>
+                    <button id="t5" class="btn btn--num"
+                            data-value="5"
+                            aria-label="Número cinco"
+                            tabindex="9">5</button>
+                    <button id="t6" class="btn btn--num"
+                            data-value="6"
+                            aria-label="Número seis"
+                            tabindex="10">6</button>
+                    <button id="tpor" class="btn btn--operator"
+                            data-value="x"
+                            aria-label="Operación multiplicación"
+                            tabindex="11">×</button>
+                    <button id="tdiv" class="btn btn--operator"
+                            data-value="/"
+                            aria-label="Operación división"
+                            tabindex="12">÷</button>
+
+                    <!-- Fila 4 -->
+                    <button id="t1" class="btn btn--num"
+                            data-value="1"
+                            aria-label="Número uno"
+                            tabindex="13">1</button>
+                    <button id="t2" class="btn btn--num"
+                            data-value="2"
+                            aria-label="Número dos"
+                            tabindex="14">2</button>
+                    <button id="t3" class="btn btn--num"
+                            data-value="3"
+                            aria-label="Número tres"
+                            tabindex="15">3</button>
+                    <button id="tpri" class="btn btn--equal"
+                            data-action="primos"
+                            aria-label="Descomposición en factores primos"
+                            tabindex="16">|</button>
+                    <button id="trai" class="btn btn--equal"
+                            data-action="raiz"
+                            aria-label="Raíz cuadrada"
+                            tabindex="17">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 1.2em; height: 1.2em;" aria-hidden="true" focusable="false">
+                            <path d="M4 12h2l4 8 4-16h8"></path>
+                        </svg>
+                        <span class="sr-only">Raíz cuadrada</span>
+                    </button>
+
+                    <!-- Fila 5 -->
+                    <button id="t0" class="btn btn--num btn--span-2"
+                            data-value="0"
+                            aria-label="Número cero"
+                            tabindex="18">0</button>
+                    <button id="tcom" class="btn btn--num"
+                            data-value=","
+                            aria-label="Coma decimal"
+                            tabindex="19">,</button>
+                    <button id="tc" class="btn btn--operator"
+                            data-action="clear"
+                            aria-label="Limpiar pantalla"
+                            tabindex="20">C</button>
+                    <button id="tdel" class="btn btn--operator"
+                            data-action="delete"
+                            aria-label="Borrar último carácter"
+                            tabindex="21">
+                        <span aria-hidden="true">⌫</span>
+                        <span class="sr-only">Borrar</span>
+                    </button>
+                </div>
+
+                <div id="salida" role="region" aria-live="polite" aria-label="Área de resultados visuales de operaciones"></div>
+
+                <nav id="divvolver" aria-label="Controles de navegación de resultados">
+                    <button id="volver" class="nav-btn"
+                            data-action="hide-screen"
+                            aria-label="Volver al teclado"
+                            tabindex="22">↩</button>
+                    <button id="botexp" class="nav-btn"
+                            data-action="divide-expanded"
+                            aria-label="Ver división expandida"
+                            tabindex="23">DIV EXPAND.</button>
+                    <button id="botnor" class="nav-btn"
+                            data-action="divide-normal"
+                            aria-label="Ver división normal"
+                            tabindex="24">DIV NORMAL</button>
+                </nav>
+            </div>
+        </section>
+    </main>
+
+    <!-- Botón para mostrar/ocultar el historial -->
+    <button id="history-toggle-btn"
+            aria-label="Mostrar u ocultar historial de operaciones"
+            aria-expanded="false"
+            aria-controls="history-panel"
+            tabindex="25">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M13,3A9,9,0,0,0,4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7,0,0,1,13,5V8L18,4L13,0V3M12,12.5A1.5,1.5,0,0,0,10.5,14A1.5,1.5,0,0,0,12,15.5A1.5,1.5,0,0,0,13.5,14A1.5,1.5,0,0,0,12,12.5Z"/>
+        </svg>
+        <span class="sr-only">Historial</span>
+    </button>
+
+    <!-- Panel del Historial -->
+    <aside id="history-panel"
+           role="complementary"
+           aria-label="Panel de historial de operaciones"
+           aria-hidden="true">
+        <header class="history-header">
+            <h2 id="history-title">Historial</h2>
+            <button id="clear-history-btn"
+                    aria-label="Limpiar todo el historial"
+                    tabindex="26">Limpiar</button>
+        </header>
+        <ul id="history-list"
+            role="list"
+            aria-labelledby="history-title"
+            aria-live="polite">
+            <!-- Las entradas del historial se añadirán aquí con JS -->
+        </ul>
+    </aside>
+
+<!-- 
+      El orden de los scripts es MUY IMPORTANTE.
+      1. config.js: Define variables globales y constantes.
+      2. visuals.js: Define helpers de renderizado.
+      3. history.js: Define los módulos de historial.
+      4. operations.js: Lógica de cálculo, depende de config y visuals.
+      5. main.js: El orquestador, se ejecuta al final y depende de todos.
+    -->
+    <script src="config.js" defer></script>
+    <script src="visuals.js" defer></script>
+    <script src="history.js" defer></script>
+    <script src="operations.js" defer></script>
+    <script src="main.js" defer></script>
+
+
+</body>
+</html>
