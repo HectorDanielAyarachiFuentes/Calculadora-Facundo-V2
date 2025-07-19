@@ -1,5 +1,5 @@
 // =======================================================
-// --- operations/modules/subtraction.js (VERSIÓN FINAL CORREGIDA) ---
+// --- operations/modules/subtraction.js (VERSIÓN FINAL CON TACHADO Y NÚMEROS) ---
 // =======================================================
 "use strict";
 
@@ -8,70 +8,151 @@ import { crearCelda, crearCeldaAnimada, esperar } from '../utils/dom-helpers.js'
 import { salida } from '../../config.js';
 
 /**
- * Realiza y visualiza la operación de resta CON ANIMACIONES SECUENCIALES.
+ * Calcula los pasos de "prestar" (borrowing) para la resta.
+ * @param {string} n1Str - Minuendo (número de arriba), ya paddeado con ceros.
+ * @param {string} n2Str - Sustraendo (número de abajo), ya paddeado con ceros.
+ * @returns {Array<object>} Un array de objetos, cada uno representando un préstamo.
+ */
+function calculateBorrows(n1Str, n2Str) {
+    const borrows = [];
+    let n1Array = n1Str.split('').map(Number);
+    let n2Array = n2Str.split('').map(Number);
+
+    for (let i = n1Array.length - 1; i >= 0; i--) {
+        if (n1Array[i] < n2Array[i]) {
+            let j = i - 1;
+            // Buscar hacia la izquierda un dígito del cual prestar (que no sea 0)
+            while (j >= 0 && n1Array[j] === 0) {
+                j--;
+            }
+
+            if (j >= 0) {
+                // Se encontró de dónde prestar. Guardar los nuevos valores.
+                const fromNewValue = n1Array[j] - 1;
+                const toNewValue = n1Array[i] + 10;
+                borrows.push({ fromIndex: j, fromNewValue, toIndex: i, toNewValue });
+
+                // Actualizar el array para que los siguientes cálculos de préstamo sean correctos
+                n1Array[j]--;
+                for (let k = j + 1; k < i; k++) {
+                    n1Array[k] = 9; // Los ceros intermedios se convierten en 9
+                }
+                n1Array[i] += 10;
+            }
+        }
+    }
+    return borrows;
+}
+
+
+/**
+ * Crea una línea para tachar un número.
+ * @param {object} styles - Estilos CSS (left, top, width, etc.).
+ * @returns {HTMLDivElement} El elemento de la línea.
+ */
+function crearTachadoAnimado(styles) {
+    const line = document.createElement('div');
+    line.className = 'output-grid__cross-out'; // Puedes añadir estilos en CSS si quieres
+    Object.assign(line.style, {
+        position: 'absolute',
+        backgroundColor: '#e84d4d', // Color rojo para tachar
+        height: '2px',
+        transform: 'rotate(-25deg)',
+        transformOrigin: 'left center',
+        transition: 'width 0.3s ease-out',
+        width: '0px', // Empieza con ancho 0 para la animación
+        ...styles
+    });
+
+    requestAnimationFrame(() => {
+        line.style.width = styles.width; // Anima al ancho completo
+    });
+    return line;
+}
+
+/**
+ * Realiza y visualiza la operación de resta con animación de "prestar" estilo cuaderno.
  * @param {Array<[string, number]>} numerosAR - Los operandos.
  */
 export async function resta(numerosAR) {
     salida.innerHTML = "";
+    const fragment = document.createDocumentFragment();
 
     // --- 1. CÁLCULOS DE LA OPERACIÓN ---
-    const maxDecimales = Math.max(numerosAR[0][1], numerosAR[1][1]);
-    const n1Calc = numerosAR[0][0].padEnd(numerosAR[0][0].length + maxDecimales - numerosAR[0][1], '0');
-    const n2Calc = numerosAR[1][0].padEnd(numerosAR[1][0].length + maxDecimales - numerosAR[1][1], '0');
-    
-    const resultadoBigInt = BigInt(n1Calc) - BigInt(n2Calc);
-    let resultadoRaw = resultadoBigInt.toString();
-    
-    let resultadoConComa = resultadoRaw;
-    if (maxDecimales > 0) {
-        let absResult = resultadoConComa.startsWith('-') ? resultadoConComa.substring(1) : resultadoConComa;
-        if (absResult.length <= maxDecimales) absResult = '0'.repeat(maxDecimales - absResult.length + 1) + absResult;
-        let formattedAbs = absResult.slice(0, absResult.length - maxDecimales) + ',' + absResult.slice(absResult.length - maxDecimales);
-        resultadoConComa = resultadoConComa.startsWith('-') ? '-' + formattedAbs : formattedAbs;
-    }
-    if (resultadoConComa.includes(',')) resultadoConComa = resultadoConComa.replace(/0+$/, '').replace(/,$/, '');
+    const minuendoStr = numerosAR[0][0];
+    const sustraendoStr = numerosAR[1][0];
+    const resultadoBigInt = BigInt(minuendoStr) - BigInt(sustraendoStr);
+    const resultadoStr = resultadoBigInt.toString();
 
-    let n1Display = numerosAR[0][0];
-    if (numerosAR[0][1] > 0) n1Display = n1Display.slice(0, n1Display.length - numerosAR[0][1]) + ',' + n1Display.slice(n1Display.length - numerosAR[0][1]);
-    let n2Display = numerosAR[1][0];
-    if (numerosAR[1][1] > 0) n2Display = n2Display.slice(0, n2Display.length - numerosAR[1][1]) + ',' + n2Display.slice(n2Display.length - numerosAR[1][1]);
+    // Asegurarse de que ambos números tengan la misma longitud para la resta visual
+    const maxLength = Math.max(minuendoStr.length, sustraendoStr.length);
+    const n1Padded = minuendoStr.padStart(maxLength, '0');
+    const n2Padded = sustraendoStr.padStart(maxLength, '0');
     
     // --- 2. CÁLCULO DEL LAYOUT ---
-    const maxWidthInChars = Math.max(n1Display.length, n2Display.length + 1, resultadoConComa.length);
-    const altoGridInRows = 4;
+    const maxWidthInChars = Math.max(n1Padded.length, n2Padded.length + 1, resultadoStr.length);
+    const altoGridInRows = 5; // Necesitamos una fila extra para los números de préstamo
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, maxWidthInChars, altoGridInRows);
     
-    // --- 3. LÓGICA DE VISUALIZACIÓN (CON ANIMACIONES) ---
-    const delayStep = 60;
-
-    // Animar aparición del minuendo
-    let yPos = paddingTop;
-    for (let i = 0; i < n1Display.length; i++) {
-        const leftPos = offsetHorizontal + (maxWidthInChars - n1Display.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
-        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--dividendo", n1Display[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, i * delayStep));
-    }
-    await esperar(n1Display.length * delayStep + 200);
-
-    // Animar aparición del sustraendo
-    yPos += tamCel;
-    const signLeft = offsetHorizontal + (maxWidthInChars - n2Display.length - 1) * tamCel + paddingLeft;
-    // CORRECCIÓN: Usamos las nuevas clases CSS
-    salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--producto", "-", { left: `${signLeft}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, 0));
+    // --- 3. LÓGICA DE VISUALIZACIÓN ---
+    const delayStep = 80;
+    const yPosMinuendo = paddingTop + tamCel; // Bajamos una fila para dejar espacio arriba
+    const yPosSustraendo = yPosMinuendo + tamCel;
     
-    for (let i = 0; i < n2Display.length; i++) {
-        const leftPos = offsetHorizontal + (maxWidthInChars - n2Display.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
-        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--dividendo", n2Display[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, 100 + i * delayStep));
+    // Dibujar minuendo
+    for (let i = 0; i < n1Padded.length; i++) {
+        const leftPos = offsetHorizontal + (maxWidthInChars - n1Padded.length + i) * tamCel + paddingLeft;
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", n1Padded[i], { left: `${leftPos}px`, top: `${yPosMinuendo}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }));
     }
-    await esperar(n2Display.length * delayStep + 300);
+    
+    // Dibujar sustraendo
+    const signLeft = offsetHorizontal + (maxWidthInChars - n2Padded.length - 1) * tamCel + paddingLeft;
+    fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "-", { left: `${signLeft}px`, top: `${yPosSustraendo}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }));
+    for (let i = 0; i < n2Padded.length; i++) {
+        const leftPos = offsetHorizontal + (maxWidthInChars - n2Padded.length + i) * tamCel + paddingLeft;
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", n2Padded[i], { left: `${leftPos}px`, top: `${yPosSustraendo}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }));
+    }
+    salida.appendChild(fragment);
+    await esperar(500);
 
+    // --- ¡NUEVO! ANIMACIÓN DE PRÉSTAMOS (BORROWING) ---
+    const borrows = calculateBorrows(n1Padded, n2Padded);
+    for (const borrow of borrows) {
+        // --- Animar el préstamo DESDE (from) ---
+        const fromCol = maxWidthInChars - n1Padded.length + borrow.fromIndex;
+        const xFrom = offsetHorizontal + fromCol * tamCel + paddingLeft;
+        
+        // Tachar el número original
+        salida.appendChild(crearTachadoAnimado({ left: `${xFrom}px`, top: `${yPosMinuendo + tamCel / 2}px`, width: `${tamCel}px` }));
+        await esperar(300);
+
+        // Mostrar el nuevo número arriba
+        const yNewNum = yPosMinuendo - tamCel * 0.7;
+        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--resto", borrow.fromNewValue, {
+            left: `${xFrom}px`, top: `${yNewNum}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente * 0.7}px`
+        }, 0));
+        await esperar(500);
+
+        // --- Animar el préstamo HACIA (to) ---
+        const toCol = maxWidthInChars - n1Padded.length + borrow.toIndex;
+        const xTo = offsetHorizontal + toCol * tamCel + paddingLeft;
+
+        // Tachar el número original
+        salida.appendChild(crearTachadoAnimado({ left: `${xTo}px`, top: `${yPosMinuendo + tamCel / 2}px`, width: `${tamCel}px` }));
+        await esperar(300);
+        
+        // Mostrar el nuevo número (ej. "12") arriba
+        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--resto", borrow.toNewValue, {
+            left: `${xTo - tamCel * 0.2}px`, top: `${yNewNum}px`, width: `${tamCel * 1.4}px`, height: `${tamCel}px`, fontSize: `${tamFuente * 0.7}px`
+        }, 0));
+        await esperar(500);
+    }
+    
     // Animar aparición de la línea
-    yPos += tamCel;
+    const yPosLinea = yPosSustraendo + tamCel;
     const lineLeft = offsetHorizontal + paddingLeft;
     const totalBlockWidth = maxWidthInChars * tamCel;
-    // CORRECCIÓN: Usamos la nueva clase CSS
-    const linea = crearCelda("output-grid__line", "", { left: `${lineLeft}px`, top: `${yPos}px`, width: `0px`, height: `2px`, transition: 'width 0.4s ease-out' });
+    const linea = crearCelda("output-grid__line", "", { left: `${lineLeft}px`, top: `${yPosLinea}px`, width: `0px`, height: `2px`, transition: 'width 0.4s ease-out' });
     salida.appendChild(linea);
 
     requestAnimationFrame(() => {
@@ -80,10 +161,9 @@ export async function resta(numerosAR) {
     await esperar(400);
 
     // Animar aparición del resultado
-    yPos += tamCel * 0.2;
-    for (let i = 0; i < resultadoConComa.length; i++) {
-        const leftPos = offsetHorizontal + (maxWidthInChars - resultadoConComa.length + i) * tamCel + paddingLeft;
-        // CORRECCIÓN: Usamos las nuevas clases CSS
-        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--cociente", resultadoConComa[i], { left: `${leftPos}px`, top: `${yPos}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, i * delayStep));
+    const yPosResultado = yPosLinea + tamCel * 0.2;
+    for (let i = 0; i < resultadoStr.length; i++) {
+        const leftPos = offsetHorizontal + (maxWidthInChars - resultadoStr.length + i) * tamCel + paddingLeft;
+        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--cociente", resultadoStr[i], { left: `${leftPos}px`, top: `${yPosResultado}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, i * delayStep));
     }
 }
