@@ -1,10 +1,10 @@
 // =======================================================
-// --- operations/modules/subtraction.js (VERSIÓN FINAL CON TACHADO Y NÚMEROS) ---
+// --- operations/modules/subtraction.js (VERSIÓN ESTABLE Y CORREGIDA RESTAURADA) ---
 // =======================================================
 "use strict";
 
 import { calculateLayout } from '../utils/layout-calculator.js';
-import { crearCelda, crearCeldaAnimada, esperar } from '../utils/dom-helpers.js';
+import { crearCelda, crearCeldaAnimada, esperar, crearFlechaLlevada } from '../utils/dom-helpers.js';
 import { salida } from '../../config.js';
 
 /**
@@ -21,21 +21,18 @@ function calculateBorrows(n1Str, n2Str) {
     for (let i = n1Array.length - 1; i >= 0; i--) {
         if (n1Array[i] < n2Array[i]) {
             let j = i - 1;
-            // Buscar hacia la izquierda un dígito del cual prestar (que no sea 0)
             while (j >= 0 && n1Array[j] === 0) {
                 j--;
             }
 
             if (j >= 0) {
-                // Se encontró de dónde prestar. Guardar los nuevos valores.
                 const fromNewValue = n1Array[j] - 1;
                 const toNewValue = n1Array[i] + 10;
                 borrows.push({ fromIndex: j, fromNewValue, toIndex: i, toNewValue });
 
-                // Actualizar el array para que los siguientes cálculos de préstamo sean correctos
                 n1Array[j]--;
                 for (let k = j + 1; k < i; k++) {
-                    n1Array[k] = 9; // Los ceros intermedios se convierten en 9
+                    n1Array[k] = 9;
                 }
                 n1Array[i] += 10;
             }
@@ -52,20 +49,20 @@ function calculateBorrows(n1Str, n2Str) {
  */
 function crearTachadoAnimado(styles) {
     const line = document.createElement('div');
-    line.className = 'output-grid__cross-out'; // Puedes añadir estilos en CSS si quieres
+    line.className = 'output-grid__cross-out';
     Object.assign(line.style, {
         position: 'absolute',
-        backgroundColor: '#e84d4d', // Color rojo para tachar
+        backgroundColor: '#e84d4d',
         height: '2px',
         transform: 'rotate(-25deg)',
         transformOrigin: 'left center',
         transition: 'width 0.3s ease-out',
-        width: '0px', // Empieza con ancho 0 para la animación
+        width: '0px',
         ...styles
     });
 
     requestAnimationFrame(() => {
-        line.style.width = styles.width; // Anima al ancho completo
+        line.style.width = styles.width;
     });
     return line;
 }
@@ -81,31 +78,34 @@ export async function resta(numerosAR) {
     // --- 1. CÁLCULOS DE LA OPERACIÓN ---
     const minuendoStr = numerosAR[0][0];
     const sustraendoStr = numerosAR[1][0];
-    const resultadoBigInt = BigInt(minuendoStr) - BigInt(sustraendoStr);
-    const resultadoStr = resultadoBigInt.toString();
-
-    // Asegurarse de que ambos números tengan la misma longitud para la resta visual
-    const maxLength = Math.max(minuendoStr.length, sustraendoStr.length);
-    const n1Padded = minuendoStr.padStart(maxLength, '0');
-    const n2Padded = sustraendoStr.padStart(maxLength, '0');
+    const minuendoBigInt = BigInt(minuendoStr);
+    const sustraendoBigInt = BigInt(sustraendoStr);
     
+    const isNegative = minuendoBigInt < sustraendoBigInt;
+    const n1Anim = isNegative ? sustraendoStr : minuendoStr;
+    const n2Anim = isNegative ? minuendoStr : sustraendoStr;
+    const resultadoAbsStr = (isNegative ? sustraendoBigInt - minuendoBigInt : minuendoBigInt - sustraendoBigInt).toString();
+
     // --- 2. CÁLCULO DEL LAYOUT ---
-    const maxWidthInChars = Math.max(n1Padded.length, n2Padded.length + 1, resultadoStr.length);
-    const altoGridInRows = 5; // Necesitamos una fila extra para los números de préstamo
+    const maxLength = Math.max(n1Anim.length, n2Anim.length);
+    const n1Padded = n1Anim.padStart(maxLength, '0');
+    const n2Padded = n2Anim.padStart(maxLength, '0');
+    
+    const resultDisplayLength = isNegative ? resultadoAbsStr.length + 1 : resultadoAbsStr.length;
+    const maxWidthInChars = Math.max(maxLength + 1, resultDisplayLength);
+    const altoGridInRows = 5;
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, maxWidthInChars, altoGridInRows);
     
     // --- 3. LÓGICA DE VISUALIZACIÓN ---
     const delayStep = 80;
-    const yPosMinuendo = paddingTop + tamCel; // Bajamos una fila para dejar espacio arriba
+    const yPosMinuendo = paddingTop + tamCel;
     const yPosSustraendo = yPosMinuendo + tamCel;
     
-    // Dibujar minuendo
+    // Dibujar minuendo y sustraendo
     for (let i = 0; i < n1Padded.length; i++) {
         const leftPos = offsetHorizontal + (maxWidthInChars - n1Padded.length + i) * tamCel + paddingLeft;
         fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", n1Padded[i], { left: `${leftPos}px`, top: `${yPosMinuendo}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }));
     }
-    
-    // Dibujar sustraendo
     const signLeft = offsetHorizontal + (maxWidthInChars - n2Padded.length - 1) * tamCel + paddingLeft;
     fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "-", { left: `${signLeft}px`, top: `${yPosSustraendo}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }));
     for (let i = 0; i < n2Padded.length; i++) {
@@ -115,33 +115,34 @@ export async function resta(numerosAR) {
     salida.appendChild(fragment);
     await esperar(500);
 
-    // --- ¡NUEVO! ANIMACIÓN DE PRÉSTAMOS (BORROWING) ---
+    // --- ANIMACIÓN DE PRÉSTAMOS (BORROWING) ---
     const borrows = calculateBorrows(n1Padded, n2Padded);
     for (const borrow of borrows) {
-        // --- Animar el préstamo DESDE (from) ---
         const fromCol = maxWidthInChars - n1Padded.length + borrow.fromIndex;
         const xFrom = offsetHorizontal + fromCol * tamCel + paddingLeft;
-        
-        // Tachar el número original
+        const toCol = maxWidthInChars - n1Padded.length + borrow.toIndex;
+        const xTo = offsetHorizontal + toCol * tamCel + paddingLeft;
+        const yNewNum = yPosMinuendo - tamCel * 0.7;
+
+        // --- Dibuja la flecha simple de préstamo ---
+        const arrowLeft = xFrom;
+        const arrowTop = yNewNum - tamCel * 0.1;
+        const arrowWidth = xTo - xFrom;
+        const arrowHeight = tamCel * 0.8;
+        salida.appendChild(crearFlechaLlevada(arrowLeft, arrowTop, arrowWidth, arrowHeight));
+        await esperar(800);
+
+        // --- Animar el préstamo DESDE (from) ---
         salida.appendChild(crearTachadoAnimado({ left: `${xFrom}px`, top: `${yPosMinuendo + tamCel / 2}px`, width: `${tamCel}px` }));
         await esperar(300);
-
-        // Mostrar el nuevo número arriba
-        const yNewNum = yPosMinuendo - tamCel * 0.7;
         salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--resto", borrow.fromNewValue, {
             left: `${xFrom}px`, top: `${yNewNum}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente * 0.7}px`
         }, 0));
-        await esperar(500);
+        await esperar(300);
 
         // --- Animar el préstamo HACIA (to) ---
-        const toCol = maxWidthInChars - n1Padded.length + borrow.toIndex;
-        const xTo = offsetHorizontal + toCol * tamCel + paddingLeft;
-
-        // Tachar el número original
         salida.appendChild(crearTachadoAnimado({ left: `${xTo}px`, top: `${yPosMinuendo + tamCel / 2}px`, width: `${tamCel}px` }));
         await esperar(300);
-        
-        // Mostrar el nuevo número (ej. "12") arriba
         salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--resto", borrow.toNewValue, {
             left: `${xTo - tamCel * 0.2}px`, top: `${yNewNum}px`, width: `${tamCel * 1.4}px`, height: `${tamCel}px`, fontSize: `${tamFuente * 0.7}px`
         }, 0));
@@ -162,8 +163,21 @@ export async function resta(numerosAR) {
 
     // Animar aparición del resultado
     const yPosResultado = yPosLinea + tamCel * 0.2;
-    for (let i = 0; i < resultadoStr.length; i++) {
-        const leftPos = offsetHorizontal + (maxWidthInChars - resultadoStr.length + i) * tamCel + paddingLeft;
-        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--cociente", resultadoStr[i], { left: `${leftPos}px`, top: `${yPosResultado}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px' }, i * delayStep));
+    const resultLeftOffset = maxWidthInChars - resultadoAbsStr.length;
+    let animationDelayStart = 0;
+
+    if (isNegative) {
+        const signLeftPos = offsetHorizontal + (resultLeftOffset - 1) * tamCel + paddingLeft;
+        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--cociente", "-", {
+            left: `${signLeftPos}px`, top: `${yPosResultado}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: tamFuente + 'px'
+        }, 0));
+        animationDelayStart = 1;
+    }
+    
+    for (let i = 0; i < resultadoAbsStr.length; i++) {
+        const leftPos = offsetHorizontal + (resultLeftOffset + i) * tamCel + paddingLeft;
+        salida.appendChild(crearCeldaAnimada("output-grid__cell output-grid__cell--cociente", resultadoAbsStr[i], {
+            left: `${leftPos}px`, top: `${yPosResultado}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente * 0.9}px` // Ligeramente más pequeño
+        }, (animationDelayStart + i) * delayStep));
     }
 }
