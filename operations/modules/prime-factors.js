@@ -1,23 +1,11 @@
 // =======================================================
-// --- operations/modules/prime-factors.js ---
-// Contiene la lógica para calcular y visualizar la descomposición
-// en factores primos de un número.
+// --- operations/modules/prime-factors.js (VERSIÓN FINAL CON COLORES CORREGIDOS) ---
 // =======================================================
 "use strict";
 
 import { calculateLayout } from '../utils/layout-calculator.js';
 import { crearCelda } from '../utils/dom-helpers.js';
-
-// Asumimos que `salida`, `display`, `errorMessages`, etc. son accesibles.
-const salida = document.querySelector("#salida");
-const display = document.querySelector("#display");
-const errorMessages = {
-    dFactorial1: "La entrada debe ser un número entero mayor que 0."
-};
-// Funciones como `actualizarEstadoDivisionUI` y `HistoryManager` deben ser importadas
-// o pasadas como parámetros si son necesarias aquí.
-// import { actualizarEstadoDivisionUI } from '../../main.js'; // Ejemplo
-// import { HistoryManager } from '../../history.js'; // Ejemplo
+import { salida, display, errorMessages } from '../../config.js';
 
 /**
  * Realiza y visualiza la descomposición en factores primos.
@@ -25,17 +13,18 @@ const errorMessages = {
 export function desFacPri() {
     salida.innerHTML = "";
     const fragment = document.createDocumentFragment();
+
     const entrada = display.innerHTML;
-    
-    // --- 1. VALIDACIÓN Y CÁLCULO DE LA OPERACIÓN ---
+
+    // --- 1. VALIDACIÓN Y CÁLCULO ---
     if (isNaN(parseInt(entrada, 10)) || entrada.includes(',') || parseInt(entrada, 10) <= 0) {
-        salida.innerHTML = `<p class="error-message">${errorMessages.dFactorial1}</p>`;
-        // actualizarEstadoDivisionUI(false); // Esta llamada debería manejarse en el controlador principal
+        salida.innerHTML = `<p class="output-screen__error-message">${errorMessages.dFactorial1}</p>`;
         return;
     }
     
     let numIzda = parseInt(entrada, 10);
-    const numIzdaArray = [], numDchaArray = [];
+    const numIzdaArray = [];
+    const numDchaArray = [];
 
     if (numIzda === 1) {
         numIzdaArray.push(1);
@@ -69,28 +58,28 @@ export function desFacPri() {
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, totalCols, numRows);
 
     // --- 3. LÓGICA DE VISUALIZACIÓN ---
+
+    // Dibujar la columna izquierda (números que se van dividiendo)
     numIzdaArray.forEach((n, idx) => {
         let s = n.toString();
-        for (let j = 0; j < s.length; j++) {
-            const left = offsetHorizontal + (maxDigitsIzda - s.length + j) * tamCel + paddingLeft;
-            const top = paddingTop + idx * tamCel;
-            fragment.appendChild(crearCelda("caja2", s[j], { left: `${left}px`, top: `${top}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
-        }
+        const xPos = offsetHorizontal + (maxDigitsIzda - s.length) * tamCel + paddingLeft;
+        const yPos = paddingTop + idx * tamCel;
+        // CORRECCIÓN: Usamos output-grid__cell--dividendo o similar para que tome color
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", s, { left: `${xPos}px`, top: `${yPos}px`, width: `${s.length * tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     });
 
-    const lineX = offsetHorizontal + maxDigitsIzda * tamCel + (separatorWidth * tamCel / 2) + paddingLeft;
-    fragment.appendChild(crearCelda("linea-vertical", "", { left: `${lineX - 1}px`, top: `${paddingTop}px`, width: `2px`, height: `${numRows * tamCel}px`, backgroundColor: "#ddd" }));
+    // Dibujar la línea vertical de separación
+    const xLineaVertical = offsetHorizontal + maxDigitsIzda * tamCel + (separatorWidth * tamCel / 2) + paddingLeft;
+    fragment.appendChild(crearCelda("output-grid__line", "", { left: `${xLineaVertical}px`, top: `${paddingTop}px`, width: `2px`, height: `${numRows * tamCel}px` }));
     
+    // Dibujar la columna derecha (factores primos)
     numDchaArray.forEach((n, idx) => {
         let s = n.toString();
-        for (let j = 0; j < s.length; j++) {
-            const left = offsetHorizontal + (maxDigitsIzda + separatorWidth + j) * tamCel + paddingLeft;
-            const top = paddingTop + idx * tamCel;
-            fragment.appendChild(crearCelda("caja3", s[j], { left: `${left}px`, top: `${top}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
-        }
+        const xPos = offsetHorizontal + (maxDigitsIzda + separatorWidth) * tamCel + paddingLeft;
+        const yPos = paddingTop + idx * tamCel;
+        // CORRECCIÓN: Usamos output-grid__cell--divisor o similar para que tome color
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--divisor", s, { left: `${xPos}px`, top: `${yPos}px`, width: `${s.length * tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px` }));
     });
 
     salida.appendChild(fragment);
-    // HistoryManager.add({ input: `Factores Primos(${entrada})`, visualHtml: salida.innerHTML, type: 'visual' });
-    // actualizarEstadoDivisionUI(false);
 }
