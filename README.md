@@ -1,183 +1,69 @@
+# La Calculadora de Facundo (V2)
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2)
 
-Entiendo que quieres el README en formato Markdown (.md). El README que te proporcioné anteriormente ya está en formato Markdown. <cite/>
+¡Bienvenido a **La Calculadora de Facundo V2**! Mucho más que una simple calculadora, es una herramienta educativa diseñada para desmitificar las matemáticas. Su principal característica es que no solo te da el resultado, sino que te **muestra visualmente y paso a paso** cómo se llega a él. Ideal para estudiantes, profesores y cualquier persona curiosa por entender el "porqué" detrás de las operaciones.
 
-Aquí tienes el archivo README.md completo basado en **La Calculadora de Facundo** [1](#4-0) :
+Este proyecto nació con la idea de hacer las matemáticas más accesibles e interactivas, transformando los cálculos abstractos en animaciones claras y fáciles de seguir.
 
-```markdown
-# 🧮 La Calculadora de Facundo
+## ✨ Galería de Funcionalidades
 
-Una calculadora web educativa moderna que visualiza algoritmos matemáticos paso a paso con animaciones interactivas.
+| Historial y Diseño Responsivo | Operaciones Detalladas | Funciones Avanzadas |
+| :---: | :---: | :---: |
+| ![Historial de operaciones](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Historial%20de%20operaciones.jpeg) | ![Suma con llevadas](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Suma%20proceso.jpeg) | ![Factores Primos](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Agrupar%20factores%20primos.jpeg) |
+| **Historial Interactivo** | **Suma con Llevadas Visuales** | **Descomposición en Factores Primos** |
+| ![Diseño móvil](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Vision%20movil%20responsiva.jpeg) | ![Resta con llevadas](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Resta%20resuleta.jpeg) | ![Raíz Cuadrada](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Raiz%20cuadrada%20con%20numeros%20exactos%20solamente%2C%20por%20ahora...jpeg) |
+| **Totalmente Responsivo** | **Resta con Préstamos Animados** | **Raíz Cuadrada (para cuadrados perfectos)** |
+| ![Pantalla de inicio](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Inicio%20de%20calculadora.jpeg) | ![División paso a paso](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Division.jpeg) | ![Resultado final](https://raw.githubusercontent.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/main/Img/Suma%20fin%20y%20resultado%20interactivo.jpeg) |
+| **Interfaz Limpia y Clara** | **División Larga Paso a Paso** | **Resultado Final Interactivo** |
 
-## ✨ Características
+## 🚀 Funcionalidades Principales
 
-- **Visualización Educativa**: Muestra el proceso completo de operaciones matemáticas con grillas visuales
-- **Operaciones Avanzadas**: Suma, resta, multiplicación, división (normal y expandida), factorización prima y raíz cuadrada
-- **Interfaz Responsiva**: Se adapta automáticamente a diferentes tamaños de pantalla
-- **Historial Persistente**: Guarda automáticamente las operaciones realizadas
-- **Soporte de Teclado**: Funciona tanto con teclado físico como virtual
-- **Precisión BigInt**: Maneja números grandes sin pérdida de precisión
+-   **Visualización Paso a Paso:** La magia de la calculadora. Cada suma, resta, multiplicación o división se desglosa en el método tradicional que se enseña en la escuela, con animaciones que indican las "llevadas" o los "préstamos".
+-   **Operaciones Soportadas:**
+    -   Suma animada.
+    -   Resta con llevadas (préstamos).
+    -   Multiplicación con productos parciales.
+    -   División larga visual.
+-   **Funciones Avanzadas:**
+    -   Descomposición en **factores primos**.
+    -   Cálculo de **raíz cuadrada** para números exactos.
+-   **Historial de Operaciones:** Guarda todas tus operaciones para que puedas revisarlas más tarde.
+-   **Diseño Responsivo:** Funciona y se ve genial tanto en computadoras de escritorio como en dispositivos móviles.
 
-## 🚀 Demo en Vivo
+## 🛠️ Estructura y Arquitectura del Proyecto
 
-Visita: [https://hectordanielayarachifuentes.github.io/CALCULADORA-FACUNDO/](https://hectordanielayarachifuentes.github.io/CALCULADORA-FACUNDO/)
+El proyecto está organizado en una estructura modular clara para facilitar el mantenimiento y la escalabilidad.
 
-## 🛠️ Tecnologías
+### Visión General de las Carpetas
 
-- **HTML5**: Estructura semántica con soporte para accesibilidad
-- **CSS3**: Diseño responsivo con variables CSS y animaciones
-- **JavaScript ES6+**: Módulos, BigInt, y manipulación avanzada del DOM
-- **LocalStorage**: Persistencia de historial sin servidor
+-   `operations/` - **Módulo de Operaciones Matemáticas**
+    -   Este es el corazón del proyecto, donde reside toda la lógica matemática. El archivo [`operations/index.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/index.js#L1-L23) actúa como exportador central.
+    -   `operations/modules/` - **Operaciones Específicas**
+        -   [`division.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/modules/division.js#L1-L6): Implementa división normal (`divide`) y extendida (`divideExt`) con visualización paso a paso.
+        -   [`multiplication.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/modules/multiplication.js#L1-L15): Realiza la multiplicación mostrando los productos parciales visuales.
+        -   [`addition.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/modules/addition.js#L107-L120): Ejecuta la suma con animaciones secuenciales para las llevadas.
+        -   [`subtraction.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/modules/subtraction.js#L1-L14): Gestiona la resta con efectos visuales animados para los préstamos.
+        -   [`prime-factors.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/modules/prime-factors.js#L1-L13): Contiene la lógica para la descomposición en factores primos.
+        -   `square-root.js`: Realiza el cálculo de la raíz cuadrada.
+    -   `operations/utils/` - **Utilidades de Soporte**
+        -   [`dom-helpers.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/utils/dom-helpers.js#L21-L37): Funciones para crear elementos visuales en el DOM (`crearCelda`, `crearCeldaAnimada`, `crearFlechaLlevada`).
+        -   `layout-calculator.js`: Sistema para calcular el posicionamiento de los elementos en la grilla de operaciones.
+        -   `parsers.js`: Utilidades para procesar la entrada numérica.
 
-## 📁 Estructura del Proyecto
+-   **Archivos Raíz del Proyecto**
+    -   [`main.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/main.js#L1-L29): Es el orquestador principal de la aplicación. Maneja los eventos del usuario y coordina la ejecución de los módulos de operaciones.
+    -   [`history.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/history.js#L51-L62): Implementa el sistema de historial a través de `HistoryManager` y `HistoryPanel`.
+    -   `config.js`: Centraliza las referencias a elementos del DOM y los mensajes de error.
+    -   `index.html`: La estructura principal de la página web.
+    -   `style.css`: Contiene todos los estilos para la interfaz y el diseño responsivo.
 
-```
-├── index.html              # Documento principal
-├── main.js                 # Orquestador de la aplicación
-├── style.css              # Estilos principales
-├── config.js              # Configuración y referencias DOM
-├── history.js             # Sistema de historial
-└── operations/
-    ├── index.js           # Exportaciones centralizadas
-    ├── modules/           # Módulos de operaciones matemáticas
-    │   ├── addition.js
-    │   ├── subtraction.js
-    │   ├── multiplication.js
-    │   ├── division.js
-    │   ├── square-root.js
-    │   └── prime-factors.js
-    └── utils/             # Utilidades auxiliares
-        ├── dom-helpers.js
-        ├── layout-calculator.js
-        └── parsers.js
-```
+### Patrón de Arquitectura
 
-## 🎯 Funcionalidades Principales
+El sistema utiliza un **patrón de exportación centralizada**. El archivo [`operations/index.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/operations/index.js#L12-L23) re-exporta todas las funciones matemáticas de los submódulos. Esto permite importaciones mucho más limpias y organizadas en el archivo principal [`main.js`](https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2/blob/main/main.js#L7-L10), mejorando la legibilidad y el mantenimiento del código.
 
-### Operaciones Básicas
-- **Suma y Resta**: Con visualización de acarreo
-- **Multiplicación**: Muestra productos parciales paso a paso
-- **División**: Modo normal y expandido con algoritmo de división larga
+## 💬 ¿Tienes Dudas? ¡Pregunta a la Comunidad!
 
-### Operaciones Especiales
-- **Factorización Prima**: Descomposición visual en factores primos
-- **Raíz Cuadrada**: Cálculo con visualización del proceso
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2)
 
-### Sistema de Historial
-- Almacenamiento automático de operaciones
-- Interfaz deslizable desde el lateral derecho
-- Persistencia en localStorage
-
-## 🎮 Uso
-
-### Teclado Virtual
-Utiliza los botones en pantalla para introducir números y operadores.
-
-### Atajos de Teclado
-- **Números**: `0-9`
-- **Operadores**: `+`, `-`, `*` (o `x`), `/`
-- **Decimal**: `,` o `.`
-- **Calcular**: `Enter` o `=`
-- **Borrar**: `Backspace`
-- **Limpiar**: `Delete` o `Escape`
-
-### Navegación
-- **Ver Pantalla**: Muestra los resultados visuales
-- **Volver**: Regresa al teclado
-- **DIV EXPAND./NORMAL**: Alterna entre modos de división
-
-## 🔧 Instalación Local
-
-1. **Clona el repositorio**:
-   ```bash
-   git clone https://github.com/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2.git
-   ```
-
-2. **Navega al directorio**:
-   ```bash
-   cd Calculadora-Facundo-V2
-   ```
-
-3. **Abre en un servidor local**:
-   ```bash
-   # Con Python 3
-   python -m http.server 8000
-   
-   # Con Node.js (npx)
-   npx serve .
-   
-   # O simplemente abre index.html en tu navegador
-   ```
-
-4. **Visita**: `http://localhost:8000`
-
-## 🏗️ Arquitectura Técnica
-
-### Patrón Modular
-La aplicación utiliza ES6 modules con una arquitectura basada en eventos:
-
-- **main.js**: Orquestador principal y manejo de eventos
-- **operations/**: Módulos especializados para cada operación matemática
-- **utils/**: Utilidades para DOM, layout y parsing
-
-### Gestión de Estado
-- Estado global mínimo con variables específicas
-- Sistema de historial con patrón Manager/Panel
-- Persistencia automática en localStorage
-
-### Renderizado Visual
-- Generación dinámica de grillas matemáticas
-- Posicionamiento absoluto calculado dinámicamente
-- Animaciones CSS con JavaScript
-
-## 🎨 Personalización
-
-### Variables CSS
-El tema se puede personalizar modificando las variables CSS en `style.css`:
-
-```css
-:root {
-    --primary-color: #66FF66;
-    --background-color: #1a1a1a;
-    --text-color: #ffffff;
-    /* ... más variables */
-}
-```
-
-### Configuración
-Ajusta límites y comportamientos en `config.js` y los módulos de operaciones.
-
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
-
-## 👨‍💻 Autor
-
-**Hector Daniel Ayarachi Fuentes** (Facundo Killer)
-- GitHub: [@HectorDanielAyarachiFuentes](https://github.com/HectorDanielAyarachiFuentes)
-
-## 🙏 Agradecimientos
-
-- Inspirado en métodos de enseñanza matemática tradicionales
-- Diseñado para estudiantes y educadores
-- Construido con amor para la comunidad educativa
-
----
-
-⭐ **¡Dale una estrella si te gusta el proyecto!** ⭐
-```
-
-## Notes
-
-Este README está completamente en formato Markdown (.md) y listo para ser guardado como `README.md` en la raíz del repositorio. Incluye toda la información esencial del proyecto basada en el análisis del código fuente [2](#4-1) , con estructura clara, emojis para mejor legibilidad, y secciones organizadas que cubren desde instalación hasta contribución.
-
-Wiki pages you might want to explore:
-- [Overview (HectorDanielAyarachiFuentes/Calculadora-Facundo-V2)](/wiki/HectorDanielAyarachiFuentes/Calculadora-Facundo-V2#1)
+Este proyecto utiliza **DeepWiki** para crear una base de conocimiento colaborativa. Si tienes alguna pregunta sobre el código, una funcionalidad, una idea para mejorar o quieres saber cómo contribuir, ¡haz clic en el badge! Podrás ver las preguntas de otros y dejar la tuya para que la comunidad o los mantenedores del proyecto te ayuden. ¡Es la mejor forma de resolver dudas sobre nuestro trabajo!
