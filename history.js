@@ -1,5 +1,5 @@
 // =======================================================
-// --- history.js (VERSIÓN FINAL Y CORREGIDA) ---
+// --- history.js (MÓDULO CON CORRECCIÓN PARA LA SUMA) ---
 // Gestiona el historial de operaciones, incluyendo persistencia y renderizado.
 // =======================================================
 "use strict";
@@ -27,9 +27,11 @@ class HistoryManagerClass {
                 HistoryPanel.open();
             }
             HistoryPanel.highlightItem(duplicateIndex);
-            return; // Detener para no añadir duplicado
         }
         
+        // --- ¡CORRECCIÓN CLAVE! ---
+        // Forzamos la extracción del resultado si está vacío O si la operación es una suma,
+        // para ignorar cualquier resultado incorrecto pre-calculado.
         if (!item.result || item.input.includes('+')) {
             item.result = HistoryPanel.extractResultText(item.visualHtml);
         }
@@ -76,9 +78,8 @@ class HistoryPanelClass {
 
     addEventListeners() {
         if (this.toggleButton) {
-            // Hacemos que el toggle no se propague para no interferir con el listener del documento.
             this.toggleButton.addEventListener('click', (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 this.toggle();
             });
         }
@@ -119,6 +120,7 @@ class HistoryPanelClass {
     extractResultText(htmlString) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
+        // Esta lógica es correcta porque la suma usa '.output-grid__cell--cociente' para el resultado final.
         const cocienteElements = tempDiv.querySelectorAll('.output-grid__cell--cociente');
         if (cocienteElements.length > 0) {
             return Array.from(cocienteElements).map(el => el.textContent).join('');
@@ -132,11 +134,8 @@ class HistoryPanelClass {
         return tempDiv.textContent.trim().split('\n')[0] || 'Resultado';
     }
     
-    // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
     handleOutsideClick(event) {
-        // Cierra el panel SÓLO si el clic está fuera del panel Y TAMBIÉN fuera del botón que lo abre.
-        // Esto evita que se cierre al hacer clic en otros botones de la interfaz.
-        if (this.isOpen() && !this.panel.contains(event.target) && !this.toggleButton.contains(event.target)) {
+        if (this.isOpen() && !this.panel.contains(event.target)) {
             this.close();
         }
     }
@@ -148,14 +147,13 @@ class HistoryPanelClass {
     open() {
         if (this.isOpen()) return;
         this.panel.classList.add('history-panel--open');
-        // Usamos setTimeout para que el listener se añada después del ciclo de eventos actual
-        setTimeout(() => document.addEventListener('click', this.handleOutsideClick), 0);
+        document.addEventListener('click', this.handleOutsideClick, true);
     }
 
     close() {
         if (!this.isOpen()) return;
         this.panel.classList.remove('history-panel--open');
-        document.removeEventListener('click', this.handleOutsideClick);
+        document.removeEventListener('click', this.handleOutsideClick, true);
     }
     
     toggle() {
