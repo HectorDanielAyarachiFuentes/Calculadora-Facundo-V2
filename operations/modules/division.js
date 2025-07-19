@@ -1,5 +1,5 @@
 // =======================================================
-// --- operations/modules/division.js (VERSIÓN CON ALINEAMIENTO EXTENDIDO CORREGIDO) ---
+// --- operations/modules/division.js (VERSIÓN FINAL CON LÓGICA DE TU CÓDIGO) ---
 // Contiene la lógica y la visualización para la operación de división.
 // `divide`: Muestra el proceso completo de la división larga (extendida).
 // `divideExt`: Muestra el layout clásico de la división finalizada (usual).
@@ -11,154 +11,92 @@ import { crearCelda } from '../utils/dom-helpers.js';
 import { salida, errorMessages } from '../../config.js';
 
 /**
- * Función interna que realiza el cálculo de la división larga entera.
- * Retorna el cociente y todos los pasos intermedios.
+ * NUEVA función de cálculo inspirada en tu código.
+ * Genera un array de todos los elementos a dibujar.
  * @param {string} dividendoStr
  * @param {string} divisorStr
- * @returns {{cociente: string, steps: Array<object>}}
+ * @returns {{cociente: string, displaySteps: Array<object>, totalRows: number}}
  */
-function longDivisionCore(dividendoStr, divisorStr) {
-    const divisor = BigInt(divisorStr);
-    const steps = [];
-    let cocienteFinal = "";
-    let chunk = "";
+function calculateDisplaySteps(dividendoStr, divisorStr) {
+    const divisorBigInt = BigInt(divisorStr);
+    const cociente = (BigInt(dividendoStr) / divisorBigInt).toString();
     
-    for (let i = 0; i < dividendoStr.length; i++) {
-        chunk += dividendoStr[i];
-        const chunkBigInt = BigInt(chunk);
+    const displaySteps = [];
+    let currentRow = 0;
 
-        if (cocienteFinal.length > 0 || chunkBigInt >= divisor) {
-            const cocienteDigito = chunkBigInt / divisor;
-            const producto = cocienteDigito * divisor;
+    // 1. Añadir el dividendo inicial
+    displaySteps.push({ text: dividendoStr, row: currentRow, colEnd: dividendoStr.length, type: 'dividendo' });
+    currentRow++;
+
+    let chunkStr = "";
+    let cocienteIndex = 0;
+
+    for (let i = 0; i < dividendoStr.length; i++) {
+        chunkStr += dividendoStr[i];
+        let chunkBigInt = BigInt(chunkStr);
+
+        if (chunkBigInt >= divisorBigInt) {
+            const producto = BigInt(cociente[cocienteIndex]) * divisorBigInt;
             const resto = chunkBigInt - producto;
 
-            steps.push({
-                dividendoParcial: chunk,
-                producto: producto.toString(),
-                resto: resto.toString(),
-                posicion: i 
-            });
+            // 2. Añadir el producto a restar
+            displaySteps.push({ text: producto.toString(), row: currentRow, colEnd: i + 1, type: 'producto' });
+            currentRow++;
 
-            cocienteFinal += cocienteDigito.toString();
-            chunk = resto.toString() === "0" ? "" : resto.toString();
-        } else {
-            if (cocienteFinal.length > 0) {
-                 steps.push({
-                    dividendoParcial: chunk,
-                    producto: "0",
-                    resto: chunk,
-                    posicion: i
-                });
+            // 3. Añadir el resto parcial
+            chunkStr = resto.toString();
+            
+            // Si no es el último paso, "bajar" el siguiente dígito
+            if (i + 1 < dividendoStr.length) {
+                chunkStr += dividendoStr[i + 1];
+                displaySteps.push({ text: chunkStr, row: currentRow, colEnd: i + 2, type: 'resto' });
+            } else { // Es el resto final
+                displaySteps.push({ text: chunkStr, row: currentRow, colEnd: i + 1, type: 'resto' });
             }
+            currentRow++;
+            cocienteIndex++;
         }
     }
-    
-    if (cocienteFinal === "") {
-        cocienteFinal = "0";
-        steps.push({
-            dividendoParcial: dividendoStr,
-            producto: "0",
-            resto: dividendoStr,
-            posicion: dividendoStr.length - 1
-        });
-    }
-
-    return { cociente: cocienteFinal, steps };
+    return { cociente, displaySteps, totalRows: currentRow };
 }
 
-/**
- * Dibuja la parte superior de la división (dividendo, divisor, cociente y la galera).
- * Esta función es compartida por ambos modos de división.
- * @param {DocumentFragment} fragment - Fragmento del DOM para añadir elementos.
- * @param {object} params - Objeto con parámetros de dibujado.
- * @returns {number} La posición Y actual después de dibujar la cabecera.
- */
-function drawHeader(fragment, { dividendoStr, divisorStr, cociente, tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop, xBloqueDerecho, anchoIzquierdo, anchoDerecho, separatorWidth, galeraHeight }) {
-    
-    // Posiciones Y de las diferentes filas lógicas
-    const yPosDividendo = paddingTop;       // Fila 0: Para el dividendo y la parte superior de la galera
-    const yPosDivisor = paddingTop + tamCel; // Fila 1: Para el divisor (una celda más abajo que el dividendo/línea horizontal)
-    const yPosCociente = paddingTop + (tamCel * 2); // Fila 2: Para el cociente (dos celdas más abajo)
 
-    // Fila 0: Dividendo
-    for (let i = 0; i < dividendoStr.length; i++) {
-        fragment.appendChild(crearCelda(
-            "output-grid__cell output-grid__cell--dividendo", 
-            dividendoStr[i], 
-            { 
-                left: `${offsetHorizontal + i * tamCel + paddingLeft}px`, 
-                top: `${yPosDividendo}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente}px` 
-            }
-        ));
+/**
+ * `drawHeader`: Dibuja la parte superior de la división con el formato de galera latinoamericano.
+ * @param {DocumentFragment} fragment
+ * @param {object} params
+ */
+function drawHeader(fragment, { divisorStr, cociente, tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop, xBloqueDerecho, anchoIzquierdo, anchoDerecho, separatorWidth, galeraHeight }) {
+    const yPosTopRow = paddingTop;
+    const yPosCociente = paddingTop + tamCel;
+
+    for (let i = 0; i < divisorStr.length; i++) {
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--divisor", divisorStr[i], {
+            left: `${xBloqueDerecho + i * tamCel}px`, top: `${yPosTopRow}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+        }));
     }
-    
-    // "La galera" (líneas de división)
+
     const xLineaVertical = offsetHorizontal + anchoIzquierdo * tamCel + (separatorWidth / 2) * tamCel + paddingLeft;
     const xEndOfRightBlock = xBloqueDerecho + anchoDerecho * tamCel;
     const anchoLineasHorizontales = xEndOfRightBlock - xLineaVertical;
 
-    // Línea vertical: Debe empezar en la misma fila que el dividendo (yPosDividendo) y extenderse hacia abajo.
-    fragment.appendChild(crearCelda(
-        "output-grid__line", 
-        "", 
-        { 
-            left: `${xLineaVertical}px`, 
-            top: `${yPosDividendo}px`, 
-            width: `2px`, 
-            height: `${galeraHeight}px` 
-        }
-    ));
-    
-    // Línea horizontal superior: Debe empezar en la misma posición X y Y que la línea vertical, y extenderse a la derecha.
-    fragment.appendChild(crearCelda(
-        "output-grid__line", 
-        "", 
-        { 
-            left: `${xLineaVertical}px`, 
-            top: `${yPosDividendo}px`, 
-            width: `${anchoLineasHorizontales}px`, 
-            height: `2px` 
-        }
-    ));
-    
-    // Fila 1: Divisor (colocado debajo de la línea horizontal y a la derecha de la vertical)
-    for (let i = 0; i < divisorStr.length; i++) {
-        fragment.appendChild(crearCelda(
-            "output-grid__cell output-grid__cell--divisor", 
-            divisorStr[i], 
-            { 
-                left: `${xBloqueDerecho + i * tamCel}px`, 
-                top: `${yPosDivisor}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente}px` 
-            }
-        ));
-    }
-    
-    // Fila 2: Cociente (debajo del divisor)
-    for (let i = 0; i < cociente.length; i++) {
-        fragment.appendChild(crearCelda(
-            "output-grid__cell output-grid__cell--cociente", 
-            cociente[i], 
-            { 
-                left: `${xBloqueDerecho + i * tamCel}px`, 
-                top: `${yPosCociente}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente}px` 
-            }
-        ));
-    }
+    fragment.appendChild(crearCelda("output-grid__line", "", {
+        left: `${xLineaVertical}px`, top: `${yPosTopRow}px`, width: `2px`, height: `${galeraHeight}px`
+    }));
+    fragment.appendChild(crearCelda("output-grid__line", "", {
+        left: `${xLineaVertical}px`, top: `${yPosCociente}px`, width: `${anchoLineasHorizontales}px`, height: `2px`
+    }));
 
-    return yPosCociente;
+    for (let i = 0; i < cociente.length; i++) {
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--cociente", cociente[i], {
+            left: `${xBloqueDerecho + i * tamCel}px`, top: `${yPosCociente}px`, width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+        }));
+    }
 }
 
+
 /**
- * `divide` (DIVISIÓN EXTENDIDA): Muestra el proceso de la división larga paso a paso.
+ * `divide` (DIVISIÓN EXTENDIDA "NORMAL"): Muestra el proceso de la división larga paso a paso.
  * @param {Array<[string, number]>} numerosAR
  */
 export function divide(numerosAR) {
@@ -177,134 +115,56 @@ export function divide(numerosAR) {
         return; 
     }
 
-    const { cociente, steps } = longDivisionCore(dividendoStr, divisorStr);
+    const { cociente, displaySteps, totalRows } = calculateDisplaySteps(dividendoStr, divisorStr);
     
     // Cálculos de layout:
-    const anchoIzquierdo = dividendoStr.length + 1; // Para el signo menos
-    const anchoDerecho = Math.max(divisorStr.length, cociente.length) + 1; // +1 para padding
-    const separatorWidth = 2; // Espacio entre dividendo y galera
-    
+    const anchoIzquierdo = dividendoStr.length + 1; 
+    const anchoDerecho = Math.max(divisorStr.length, cociente.length) + 1; 
+    const separatorWidth = 2; 
     const totalCols = anchoIzquierdo + separatorWidth + anchoDerecho;
-    const totalRows = 3 + (steps.length * 2); // 3 filas de encabezado + 2 por cada paso
     
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, totalCols, totalRows);
-    
     const xBloqueDerecho = offsetHorizontal + (anchoIzquierdo + separatorWidth) * tamCel + paddingLeft;
-
-    // Altura de la galera para la división extendida: Cubre todas las filas.
     const galeraHeight = totalRows * tamCel; 
 
-    let currentYOffsetForSteps = drawHeader(fragment, { 
-        dividendoStr, 
-        divisorStr, 
-        cociente, 
-        tamCel, 
-        tamFuente, 
-        offsetHorizontal, 
-        paddingLeft, 
-        paddingTop, 
-        xBloqueDerecho, 
-        anchoIzquierdo, 
-        anchoDerecho, 
-        separatorWidth, 
-        galeraHeight 
+    // Dibujar el Header (Divisor, Cociente y Galera)
+    drawHeader(fragment, { 
+        divisorStr, cociente, tamCel, tamFuente, 
+        offsetHorizontal, paddingLeft, paddingTop, xBloqueDerecho, 
+        anchoIzquierdo, anchoDerecho, separatorWidth, galeraHeight 
     });
-    
-    // Dibujar los pasos de la resta
-    steps.forEach((step, stepIndex) => {
-        currentYOffsetForSteps += tamCel; 
-        
-        // CORRECCIÓN CLAVE: El `producto` y el `resto` se alinean con la posición final
-        // del `dividendoParcial`.
-        const endPositionOfPartialDividend = step.posicion;
-        
-        // La posición X del producto se calcula desde la derecha.
-        const xProducto = offsetHorizontal + (endPositionOfPartialDividend - step.producto.length + 1) * tamCel + paddingLeft;
-        
-        // Signo menos, alineado a la izquierda del producto
-        fragment.appendChild(crearCelda(
-            "output-grid__cell output-grid__cell--producto", 
-            "-", 
-            { 
-                left: `${xProducto - tamCel}px`, 
-                top: `${currentYOffsetForSteps}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente}px` 
-            }
-        ));
 
-        // Dígitos del producto
-        for (let i = 0; i < step.producto.length; i++) {
-            fragment.appendChild(crearCelda(
-                "output-grid__cell output-grid__cell--producto", 
-                step.producto[i], 
-                { 
-                    left: `${xProducto + i * tamCel}px`, 
-                    top: `${currentYOffsetForSteps}px`, 
-                    width: `${tamCel}px`, 
-                    height: `${tamCel}px`, 
-                    fontSize: `${tamFuente}px` 
-                }
-            ));
+    // --- LÓGICA DE DIBUJO DE PASOS CORREGIDA ---
+    displaySteps.forEach(step => {
+        const xStart = offsetHorizontal + (step.colEnd - step.text.length) * tamCel + paddingLeft;
+        const yStart = paddingTop + step.row * tamCel;
+        const clase = `output-grid__cell--${step.type}`;
+
+        for (let i = 0; i < step.text.length; i++) {
+            fragment.appendChild(crearCelda(`output-grid__cell ${clase}`, step.text[i], {
+                left: `${xStart + i * tamCel}px`, top: `${yStart}px`,
+                width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+            }));
         }
 
-        // Línea de resta (debajo del producto)
-        fragment.appendChild(crearCelda(
-            "output-grid__line", 
-            "", 
-            { 
-                left: `${xProducto}px`, 
-                top: `${currentYOffsetForSteps + tamCel}px`, 
-                width: `${step.producto.length * tamCel}px`, 
-                height: `2px` 
-            }
-        ));
-        
-        currentYOffsetForSteps += tamCel; 
-
-        // La posición X del resto se calcula desde la derecha.
-        const xResto = offsetHorizontal + (endPositionOfPartialDividend - step.resto.length + 1) * tamCel + paddingLeft;
-        
-        // Dígitos del resto parcial
-        for (let i = 0; i < step.resto.length; i++) {
-            fragment.appendChild(crearCelda(
-                "output-grid__cell output-grid__cell--resto", 
-                step.resto[i], 
-                { 
-                    left: `${xResto + i * tamCel}px`, 
-                    top: `${currentYOffsetForSteps}px`, 
-                    width: `${tamCel}px`, 
-                    height: `${tamCel}px`, 
-                    fontSize: `${tamFuente}px` 
-                }
-            ));
-        }
-
-        // Si no es el último paso, "bajar" el siguiente dígito del dividendo original
-        if (stepIndex < steps.length - 1 && (step.posicion + 1) < dividendoStr.length) {
-            const nextDigitIndex = step.posicion + 1;
-            const nextDigit = dividendoStr[nextDigitIndex];
-            const xNextDigit = offsetHorizontal + nextDigitIndex * tamCel + paddingLeft;
-            fragment.appendChild(crearCelda(
-                "output-grid__cell output-grid__cell--dividendo", 
-                nextDigit, 
-                { 
-                    left: `${xNextDigit}px`, 
-                    top: `${currentYOffsetForSteps}px`, // Se baja en la misma fila del resto
-                    width: `${tamCel}px`, 
-                    height: `${tamCel}px`, 
-                    fontSize: `${tamFuente}px` 
-                }
-            ));
+        if (step.type === 'producto') {
+            fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--producto", "-", {
+                left: `${xStart - tamCel}px`, top: `${yStart}px`,
+                width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+            }));
+            fragment.appendChild(crearCelda("output-grid__line", "", {
+                left: `${xStart}px`, top: `${yStart + tamCel}px`,
+                width: `${step.text.length * tamCel}px`, height: `2px`
+            }));
         }
     });
     
     salida.appendChild(fragment);
 }
 
+
 /**
- * `divideExt` (DIVISIÓN SIMPLIFICADA): Muestra el dividendo, divisor, cociente y el resto final.
+ * `divideExt` (DIVISIÓN SIMPLIFICADA "EXPAND"): Muestra solo el resultado final.
  * @param {Array<[string, number]>} numerosAR
  */
 export function divideExt(numerosAR) {
@@ -323,55 +183,42 @@ export function divideExt(numerosAR) {
         return; 
     }
 
-    const { cociente, steps } = longDivisionCore(dividendoStr, divisorStr);
-    const restoFinal = steps.length > 0 ? steps[steps.length - 1].resto : dividendoStr;
+    const { cociente, displaySteps } = calculateDisplaySteps(dividendoStr, divisorStr);
+    const restoFinal = displaySteps[displaySteps.length - 1].text;
 
-    // Layout para el modo usual (simplificado):
-    const anchoIzquierdo = dividendoStr.length; // No se necesita espacio para signo menos
-    const anchoDerecho = Math.max(divisorStr.length, cociente.length) + 1; // +1 para padding
-    const separatorWidth = 2; // Espacio entre dividendo y galera
+    const anchoIzquierdo = dividendoStr.length; 
+    const anchoDerecho = Math.max(divisorStr.length, cociente.length) + 1; 
+    const separatorWidth = 2; 
     
     const totalCols = anchoIzquierdo + separatorWidth + anchoDerecho;
-    const totalRows = 4; // Dividendo, Divisor, Cociente, Resto Final
+    const totalRows = 3;
     
     const { tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop } = calculateLayout(salida, totalCols, totalRows);
-    
     const xBloqueDerecho = offsetHorizontal + (anchoIzquierdo + separatorWidth) * tamCel + paddingLeft;
+    const galeraHeight = 2 * tamCel; 
 
-    // Altura de la galera para el modo SIMPLIFICADO: Cubre solo las 3 primeras filas.
-    const galeraHeight = 3 * tamCel; 
-
-    let yPos = drawHeader(fragment, { 
-        dividendoStr, 
-        divisorStr, 
-        cociente, 
-        tamCel, 
-        tamFuente, 
-        offsetHorizontal, 
-        paddingLeft, 
-        paddingTop, 
-        xBloqueDerecho, 
-        anchoIzquierdo, 
-        anchoDerecho, 
-        separatorWidth, 
-        galeraHeight 
+    // Dibujar Header
+    drawHeader(fragment, { 
+        divisorStr, cociente, tamCel, tamFuente, offsetHorizontal, paddingLeft, paddingTop, 
+        xBloqueDerecho, anchoIzquierdo, anchoDerecho, separatorWidth, galeraHeight 
     });
 
-    // Dibujar solo el resto final (Algoritmo Usual)
-    yPos += tamCel; 
+    // Dibujar dividendo
+    for (let i = 0; i < dividendoStr.length; i++) {
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--dividendo", dividendoStr[i], {
+            left: `${offsetHorizontal + i * tamCel + paddingLeft}px`, top: `${paddingTop}px`,
+            width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+        }));
+    }
+
+    // Dibujar resto final
+    const yResto = paddingTop + 2 * tamCel; 
     const xResto = offsetHorizontal + (dividendoStr.length - restoFinal.length) * tamCel + paddingLeft;
     for (let i = 0; i < restoFinal.length; i++) {
-        fragment.appendChild(crearCelda(
-            "output-grid__cell output-grid__cell--resto", 
-            restoFinal[i], 
-            { 
-                left: `${xResto + i * tamCel}px`, 
-                top: `${yPos}px`, 
-                width: `${tamCel}px`, 
-                height: `${tamCel}px`, 
-                fontSize: `${tamFuente}px` 
-            }
-        ));
+        fragment.appendChild(crearCelda("output-grid__cell output-grid__cell--resto", restoFinal[i], {
+            left: `${xResto + i * tamCel}px`, top: `${yResto}px`,
+            width: `${tamCel}px`, height: `${tamCel}px`, fontSize: `${tamFuente}px`
+        }));
     }
     
     salida.appendChild(fragment);
