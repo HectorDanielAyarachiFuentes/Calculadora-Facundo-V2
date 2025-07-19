@@ -1,48 +1,47 @@
 // =======================================================
 // --- operations/utils/dom-helpers.js (VERSIÓN FINAL) ---
-// Única fuente de verdad para crear elementos visuales.
-// Incluye las animaciones avanzadas de visuals.js
 // =======================================================
 "use strict";
 
-/**
- * Función de utilidad para crear una pausa en funciones asíncronas.
- * @param {number} ms - Milisegundos a esperar.
- * @returns {Promise<void>}
- */
 export const esperar = ms => new Promise(res => setTimeout(res, ms));
 
 /**
- * Crea un elemento <div> genérico para usar como celda en la grilla visual.
- * @param {string} className - La clase CSS para aplicar al div.
- * @param {string} content - El contenido de texto para el div.
- * @param {object} styles - Un objeto de JavaScript con los estilos a aplicar.
- * @returns {HTMLDivElement} El elemento <div> creado y estilizado.
+ * Crea un elemento <div> genérico para el grid de operaciones.
+ * @param {string} classNames - Una o más clases CSS separadas por espacios.
+ * @param {string} content - El contenido de texto.
+ * @param {object} styles - Estilos en línea (left, top, width, height).
+ * @returns {HTMLDivElement} El elemento <div> creado.
  */
-export function crearCelda(className, content, styles) {
+export function crearCelda(classNames, content, styles) {
     const celda = document.createElement('div');
-    celda.className = className;
-    celda.textContent = content; // Usamos textContent por seguridad, previene inyección de HTML
+    celda.className = classNames;
+    celda.textContent = content;
     Object.assign(celda.style, styles);
-    celda.style.position = "absolute"; // Asegurar posición absoluta para todas las celdas
+
+    // Centrado vertical robusto
+    if (styles.height) {
+        celda.style.lineHeight = styles.height;
+    }
+    
     return celda;
 }
 
 /**
- * Crea una celda que aparece con una animación CSS.
- * @param {string} className - Clase CSS para la celda.
- * @param {string} content - Contenido de texto.
- * @param {object} styles - Objeto con estilos CSS.
- * @param {number} delay - Retraso en ms para la animación.
- * @returns {HTMLDivElement} El elemento <div> creado y listo para animar.
+ * Crea una celda con animación.
+ * @param {string} classNames - Clases CSS.
+ * @param {string} content - Contenido.
+ * @param {object} styles - Estilos.
+ * @param {number} delay - Retraso de animación en ms.
+ * @returns {HTMLDivElement} El elemento <div> animado.
  */
-export function crearCeldaAnimada(className, content, styles, delay = 0) {
-    const celda = crearCelda(className, content, styles);
-    // Añadimos una clase que activará la animación definida en el CSS
-    celda.classList.add('fade-in-scale');
+export function crearCeldaAnimada(classNames, content, styles, delay = 0) {
+    const celda = crearCelda(classNames, content, styles);
+    celda.classList.add('animate-fade-in-scale');
     celda.style.animationDelay = `${delay}ms`;
     return celda;
 }
+
+// ... La función crearFlechaLlevada se mantiene igual ...
 
 /**
  * Crea una flecha SVG animada para visualizar las "llevadas".

@@ -1,125 +1,122 @@
-/* --- Fuentes Personalizadas --- */
-@font-face {
-    font-family: 'jellyregular';
-    src: url('jelly-webfont.woff2') format('woff2'), url('jelly-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'kurzetstypekurzetstype';
-    src: url('kurzetstype_v1.4-webfont.woff2') format('woff2'), url('kurzetstype_v1.4-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'arrow_7regular';
-    src: url('arrow_7-webfont.woff2') format('woff2'), url('arrow_7-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
+/* ======================================================= */
+/* --- style.css (VERSIÓN FINAL COMPLETA) --- */
+/* ======================================================= */
 
-/* --- Variables CSS Mejoradas --- */
+/* --- FUENTES Y VARIABLES GLOBALES --- */
+@font-face { font-family: 'jellyregular'; src: url('jelly-webfont.woff2') format('woff2'), url('jelly-webfont.woff') format('woff'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'kurzetstypekurzetstype'; src: url('kurzetstype_v1.4-webfont.woff2') format('woff2'), url('kurzetstype_v1.4-webfont.woff') format('woff'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'arrow_7regular'; src: url('arrow_7-webfont.woff2') format('woff2'), url('arrow_7-webfont.woff') format('woff'); font-weight: normal; font-style: normal; font-display: swap; }
+
 :root {
     --bg-main: #121212;
     --bg-grid-lines: rgba(200, 200, 200, 0.04);
     --bg-display: #1a1a1a;
     --bg-keyboard: #000;
-    --color-title-1: #e84d4d;
-    --color-title-2: #4de89d;
+    --bg-output-screen: #111;
     --color-display-text: #f0e68c;
     --btn-num-bg: #FFFF66;
-    --btn-op-bg: #FF3333; /* Un rojo un poco más vibrante */
+    --btn-op-bg: #FF3333;
     --btn-special-bg: #6666FF;
     --btn-equal-bg: #66FF66;
     --btn-text-color: #000;
     --btn-disabled-bg: #333;
     --btn-disabled-text: #666;
-    --output-caja-1: #e88d8d;
-    --output-caja-2: #8de89d;
-    --output-caja-3: #8d8de8;
-    --output-caja-4: #e8e88d;
-
-    /* Nuevas/Mejoradas variables para el historial */
-    --history-panel-bg: #1f1f1f; /* Un poco más oscuro para contraste */
-    --history-header-bg: #2b2b2b; /* Más oscuro aún */
-    --history-border-color: #404040; /* Bordes más suaves */
-    --history-text-color: #e0e0e0; /* Texto más claro */
-    --history-input-color: #b0b0b0; /* Color para la operación de entrada */
-    --history-result-color: #f0e68c; /* Amarillo vibrante para el resultado */
-    --history-hover-bg: #333333; /* Fondo al pasar el ratón */
-    --history-clear-btn-bg: #e74c3c; /* Rojo para el botón limpiar */
-    --history-clear-btn-hover-bg: #c0392b; /* Rojo más oscuro al pasar el ratón */
-
+    --nav-height: 60px;
+    --nav-bg: #333;
     --focus-color: #66FF66;
-    --focus-shadow: 0 0 0 3px rgba(102, 255, 102, 0.3);
-
-    /* --- NUEVAS VARIABLES PARA ALTURAS DE PANTALLA --- */
-    --divvolver-height: 60px; /* Altura fija para la barra de navegación inferior */
+    --history-panel-bg: #1f1f1f;
+    --history-header-bg: #2b2b2b;
+    --history-border-color: #404040;
+    --history-text-color: #e0e0e0;
+    --history-input-color: #b0b0b0;
+    --history-hover-bg: #333333;
+    --history-clear-btn-bg: #e74c3c;
+    --history-clear-btn-hover-bg: #c0392b;
+    --color-lineas: #ddd;
+    --color-error: #e84d4d;
 }
 
-/* --- Reset y Base --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* --- RESET Y BASE --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { display: flex; justify-content: center; align-items: center; min-height: 100dvh; background-color: var(--bg-main); background-image: repeating-linear-gradient(90deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px), repeating-linear-gradient(0deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px); padding: 20px; font-family: 'kurzetstypekurzetstype', sans-serif; overflow: hidden; }
+button { outline: none; border: none; font-family: inherit; cursor: pointer; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; }
 
-/* Clase para elementos solo visibles para lectores de pantalla */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
+/* --- ESTRUCTURA PRINCIPAL --- */
+.calculator-container { position: relative; opacity: 0; transition: opacity 1s; width: 100%; max-width: 480px; }
+.display { background-color: var(--bg-display); color: var(--color-display-text); text-align: right; width: 100%; padding: 20px; font-size: 2.2rem; overflow: hidden; border-radius: 10px; min-height: 65px; word-wrap: break-word; display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px; }
+.keyboard-container { position: relative; background-color: var(--bg-keyboard); width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
 
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100dvh;
-    background-color: var(--bg-main);
-    background-image:
-        repeating-linear-gradient(90deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px),
-        repeating-linear-gradient(0deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px);
-    padding: 20px;
-    font-family: 'kurzetstypekurzetstype', sans-serif;
-    overflow: hidden; /* Mantiene el desbordamiento controlado */
-}
+/* ======================================================= */
+/* --- COMPONENTE: TECLADO (Keyboard) --- */
+/* ======================================================= */
+.keyboard { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: top 0.5s ease-in-out, opacity 0.3s ease-in-out; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 2px; z-index: 2; }
+.keyboard--hidden { top: 100%; opacity: 0; pointer-events: none; }
+.keyboard__button { font-size: 1.4rem; color: var(--btn-text-color); display: flex; justify-content: center; align-items: center; border: 2px solid #000; font-family: 'jellyregular', sans-serif; transition: transform 0.1s ease, background-color 0.2s ease; }
+.keyboard__button:disabled { background-color: var(--btn-disabled-bg) !important; color: var(--btn-disabled-text); cursor: not-allowed; }
+.keyboard__button--number { background-color: var(--btn-num-bg); }
+.keyboard__button--operator { background-color: var(--btn-op-bg); }
+.keyboard__button--special { background-color: var(--btn-special-bg); font-size: 0.8em; }
+.keyboard__button--equals { background-color: var(--btn-equal-bg); }
+.keyboard__button--double-width { grid-column: span 2; }
+.keyboard__button--triple-width { grid-column: span 3; }
 
-button {
-    outline: none;
-    border: none;
-    font-family: inherit;
-}
+/* ======================================================= */
+/* --- COMPONENTE: PANTALLA DE SALIDA (Output Screen) --- */
+/* ======================================================= */
+.output-screen { position: absolute; top: 0; left: 0; background-color: var(--bg-output-screen); width: 100%; height: calc(100% - var(--nav-height)); transition: opacity 0.3s ease-in-out; padding: 15px; overflow: auto; z-index: 1; opacity: 0; pointer-events: none; }
+.output-screen--visible { opacity: 1; pointer-events: all; }
+.output-grid__cell { position: absolute; font-family: 'kurzetstypekurzetstype', sans-serif; text-align: center; }
+.output-grid__line { position: absolute; background-color: var(--color-lineas); }
+.output-grid__cell--dividendo { color: #ff8c00; }
+.output-grid__cell--divisor { color: #6495ed; }
+.output-grid__cell--cociente { color: #00ff00; }
+.output-grid__cell--producto { color: #ccc; }
+.output-grid__cell--resto { color: #f08080; }
+.output-screen__error-message { color: var(--color-error); font-size: 1.2rem; text-align: center; width: 90%; position: relative; margin: auto; }
 
-/* --- Estilos de Accesibilidad Mejorados --- */
-button:focus-visible,
-a:focus-visible {
-    outline: 2px solid var(--focus-color);
-    outline-offset: 2px;
-    box-shadow: var(--focus-shadow);
-}
+/* ======================================================= */
+/* --- COMPONENTE: NAVEGACIÓN INFERIOR (Bottom Nav) --- */
+/* ======================================================= */
+.bottom-nav { position: absolute; bottom: -100%; left: 0; width: 100%; height: var(--nav-height); transition: bottom 0.5s ease-in-out; background-color: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; padding: 10px; z-index: 3; gap: 8px; opacity: 0; pointer-events: none; }
+.bottom-nav--visible { bottom: 0; opacity: 1; pointer-events: all; }
+.bottom-nav__button { color: rgba(255, 255, 255, 0.8); background-color: rgba(255, 255, 255, 0.08); padding: 10px; border-radius: 5px; flex-grow: 1; text-align: center; }
+.bottom-nav__button:hover { background-color: rgba(255, 255, 255, 0.2); color: white; }
+.bottom-nav__button--arrow { font-family: 'arrow_7regular', sans-serif; font-size: 1.5rem; }
 
-/* --- Estructura Principal --- */
-#contenedor {
-    position: relative;
-    opacity: 0;
-    transition: opacity 1s;
-    width: 100%;
-    max-width: 480px;
-    /* Los tamaños específicos se ajustarán por JS en alCargar() */
-}
+/* ======================================================= */
+/* --- COMPONENTE: HISTORIAL (History Panel) --- */
+/* ======================================================= */
+.history-toggle-btn { position: fixed; top: 20px; right: 20px; z-index: 1002; background-color: #333; border: 1px solid #555; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s, transform 0.2s; }
+.history-toggle-btn:hover { background-color: #4CAF50; transform: scale(1.1); }
+.history-toggle-btn svg { width: 28px; height: 28px; fill: #eee; }
+.history-panel { position: fixed; top: 0; right: -100%; width: 350px; max-width: 100vw; height: 100dvh; background-color: var(--history-panel-bg); z-index: 1000; display: flex; flex-direction: column; transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1); visibility: hidden; }
+.history-panel--open { right: 0; visibility: visible; }
+.history-panel__header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: var(--history-header-bg); border-bottom: 1px solid var(--history-border-color); }
+.history-panel__title { margin: 0; font-size: 1.3em; color: var(--history-text-color); }
+.history-panel__clear-btn { background-color: var(--history-clear-btn-bg); color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.85em; }
+.history-panel__clear-btn:hover { background-color: var(--history-clear-btn-hover-bg); }
+.history-panel__list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+.history-panel__item { padding: 12px 15px; border-bottom: 1px solid var(--history-border-color); cursor: pointer; transition: background-color 0.2s; }
+.history-panel__item:hover { background-color: var(--history-hover-bg); }
+.history-panel__input { font-size: 0.95em; color: var(--history-input-color); word-break: break-all; }
+.history-panel__result { font-size: 1.2em; font-weight: bold; color: var(--color-display-text); margin-top: 6px; }
 
-/* --- Header Semántico --- */
-header[role="banner"] { /* Este es el título grande de la calculadora */
+/* ======================================================= */
+/* --- ANIMACIONES --- */
+/* ======================================================= */
+.animate-fade-in-scale { opacity: 0; transform: scale(0.5); animation: fadeInScale-animation 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes fadeInScale-animation { to { opacity: 1; transform: scale(1); } }
+
+
+
+
+
+
+/* ======================================================= */
+/* --- COMPONENTE: HEADER (Título Principal) --- */
+/* ======================================================= */
+header[role="banner"] {
     margin-bottom: 25px;
     text-align: center;
 }
@@ -130,577 +127,29 @@ header h1 {
     font-weight: bold;
     line-height: 1;
     letter-spacing: 2px;
-    color: var(--color-title-1);
+    color: #e84d4d; /* Usando un color directo o una variable si la tienes */
     text-transform: uppercase;
     text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 header h1 span {
-    color: var(--color-title-2);
+    color: #4de89d; /* Usando un color directo o una variable */
 }
 
 header .subtitle {
     font-size: clamp(0.7rem, 2vw, 0.9rem);
-    color: var(--color-title-1);
+    color: #e84d4d;
     margin-top: 15px;
     opacity: 0.8;
 }
 
 header .subtitle a {
-    color: var(--btn-special-bg);
+    color: var(--btn-special-bg, #6666FF); /* Usa la variable si existe, si no un color por defecto */
     text-decoration: underline;
     font-weight: bold;
     transition: color 0.2s ease;
-    cursor: pointer;
 }
 
 header .subtitle a:hover {
-    color: var(--color-title-2);
-}
-
-/* --- Secciones Semánticas --- */
-#display-section {
-    margin-bottom: 15px;
-}
-
-#keyboard-section {
-    position: relative; /* Asegura el contexto de apilamiento para los z-index */
-    width: 100%;
-    aspect-ratio: 1 / 1;
-}
-
-/* --- Display Mejorado --- */
-#display {
-    background-color: var(--bg-display);
-    color: var(--color-display-text);
-    text-align: right;
-    width: 100%;
-    padding: 20px;
-    font-size: 2.2rem;
-    overflow: hidden;
-    border-radius: 10px;
-    min-height: 65px;
-    word-wrap: break-word;
-    border: 2px solid transparent;
-    transition: border-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-#cuerpoteclado {
-    position: relative; /* CRUCIAL: Contenedor para el deslizamiento */
-    background-color: var(--bg-keyboard);
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden; /* CRUCIAL: Recorta el contenido fuera de su área */
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Teclado con Data Attributes --- */
-#teclado {
-    position: absolute;
-    top: 0; /* Estado inicial: visible */
-    left: 0;
-    width: 100%;
-    height: 100%; /* Ocupa todo el alto de cuerpoteclado */
-    transition: top 0.5s ease-in-out, opacity 0.3s ease-in-out; /* Add opacity transition */
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 2px;
-    z-index: 2; /* Por encima de salida/divvolver en estado inicial */
-    opacity: 1; /* Initial state */
-    pointer-events: all; /* Initial state */
-}
-
-/* Clases para controlar la visibilidad y puntero */
-#teclado.visible-salida-teclado {
-    top: 100%;
-    opacity: 0;
-    pointer-events: none;
-}
-
-#teclado button {
-    font-size: 1.4rem;
-    color: var(--btn-text-color);
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    border: 2px solid #000;
-    font-family: 'jellyregular', sans-serif;
-    transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-/* --- Animación Arcoíris Optimizada --- */
-@keyframes arcoiris {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-}
-
-#teclado button:not(:disabled):hover {
-    background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
-    background-size: 200% 200%;
-    animation: arcoiris 2s linear infinite;
-    transform: scale(1.05);
-}
-
-#teclado button:disabled {
-    background-color: var(--btn-disabled-bg) !important;
-    color: var(--btn-disabled-text);
-    cursor: not-allowed;
-    animation: none !important;
-    transform: none !important;
-}
-
-/* --- Estilos para Data Attributes --- */
-button[data-action="view-screen"] {
-    grid-column: span 2;
-    background-color: var(--btn-special-bg);
-    font-size: 0.8em;
-}
-
-button[data-action="calculate"] {
-    grid-column: span 3;
-    background-color: var(--btn-equal-bg);
-}
-
-button[data-value="0"] {
-    grid-column: span 2;
-}
-
-button[data-value]:not([data-value="+"]):not([data-value="-"]):not([data-value="x"]):not([data-value="/"]):not([data-action]) {
-    background-color: var(--btn-num-bg);
-}
-
-button[data-value="+"],
-button[data-value="-"],
-button[data-value="x"],
-button[data-value="/"],
-button[data-action="clear"],
-button[data-action="delete"] {
-    background-color: var(--btn-op-bg);
-}
-
-button[data-action="primos"],
-button[data-action="raiz"] {
-    background-color: var(--btn-equal-bg);
-}
-
-/* --- Pantalla de Salida (Visualización de Algoritmos) --- */
-#salida {
-    position: absolute;
-    top: 0; /* Inicialmente en 0 para que la animación funcione, pero oculto por opacidad */
-    left: 0;
-    background-color: #111;
-    width: 100%;
-    height: calc(100% - var(--divvolver-height)); /* Cubre el espacio encima de la barra de navegación */
-    transition: top 0.5s ease-in-out, opacity 0.3s ease-in-out; /* Add opacity transition */
-    padding: 15px;
-    overflow: auto;
-    z-index: 1;
-    display: flex; /* Para centrar el contenido */
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; /* Centra el contenido verticalmente */
-    opacity: 0; /* Initial state */
-    pointer-events: none; /* Initial state */
-}
-
-/* Clases para controlar la visibilidad y puntero */
-#salida.visible-salida-teclado {
-    top: 0; /* Se mantiene en la parte superior */
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* --- Controles de Navegación de Salida --- */
-#divvolver {
-    position: absolute;
-    bottom: 0; /* Estado inicial: oculto en la parte inferior del teclado, fuera de vista */
-    left: 0;
-    width: 100%;
-    height: var(--divvolver-height); /* Altura fija para la barra de navegación */
-    transition: bottom 0.5s ease-in-out, opacity 0.3s ease-in-out; /* Transición para 'bottom' y opacidad */
-
-    background-color: #333;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px;
-    z-index: 2; /* Por encima de la salida */
-    gap: 8px;
-
-    opacity: 0; /* Initial state */
-    pointer-events: none; /* Initial state */
-}
-
-/* Clases para controlar la visibilidad y puntero */
-#divvolver.visible-salida-nav {
-    bottom: 0;
-    opacity: 1;
-    pointer-events: all;
-}
-
-.nav-btn {
-    color: rgba(255, 255, 255, 0.8);
-    background-color: rgba(255, 255, 255, 0.08);
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    font-family: inherit;
-    flex-grow: 1;
-    text-align: center;
-    min-width: 80px;
-    max-width: 30%; /* Mantener el control de ancho para botones */
-}
-
-.nav-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-button[data-action="hide-screen"] {
-    font-family: 'arrow_7regular', sans-serif;
-    font-size: 1.5rem;
-    flex-basis: 30%;
-    max-width: 100px;
-}
-
-button[data-action="divide-expanded"],
-button[data-action="divide-normal"] {
-    font-family: 'jellyregular', sans-serif;
-    flex-basis: 45%;
-    min-width: 120px;
-}
-
-/* --- Elementos de Salida Visual (contenido de #salida) --- */
-.caja, .caja2, .caja3, .caja4 {
-    /* La posición absoluta se añade en JS para flexibilidad */
-    text-align: center;
-    font-family: 'kurzetstypekurzetstype', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.caja { color: var(--output-caja-1); }
-.caja2 { color: var(--output-caja-2); }
-.caja3 { color: var(--output-caja-3); }
-.caja4 { color: var(--output-caja-4); }
-
-.error {
-    color: var(--output-caja-1);
-    font-size: 1.2rem;
-    text-align: center;
-    position: relative;
-    width: 100%;
-}
-
-/* --- Sistema de Historial Mejorado --- */
-#history-toggle-btn {
-    position: fixed;
-    top: calc(env(safe-area-inset-top, 0px) + 20px);
-    right: calc(env(safe-area-inset-right, 0px) + 20px);
-    z-index: 1002;
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-#history-toggle-btn:hover {
-    background-color: #4CAF50;
-    transform: scale(1.1);
-}
-
-#history-toggle-btn svg {
-    width: 28px;
-    height: 28px;
-    fill: #eee;
-}
-
-#history-panel {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 350px;
-    max-width: 100vw;
-    height: 100dvh;
-    background-color: var(--history-panel-bg);
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-sizing: border-box;
-    visibility: hidden; /* Controlado por JS para evitar scrollbar */
-}
-
-#history-panel.open {
-    right: 0;
-    visibility: visible; /* Controlado por JS */
-}
-
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background-color: var(--history-header-bg);
-    border-bottom: 1px solid var(--history-border-color);
-    flex-shrink: 0;
-    padding-right: calc(20px + 50px + 20px); /* Ajuste para el botón de toggle */
-}
-
-.history-header h2 {
-    margin: 0;
-    font-size: 1.3em;
-    color: var(--history-text-color);
-    font-weight: bold;
-    flex-grow: 1;
-}
-
-.history-header button {
-    background-color: var(--history-clear-btn-bg);
-    color: #fff;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    font-size: 0.85em;
-    font-family: 'jellyregular', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    position: static;
-    margin-left: 20px;
-    flex-shrink: 0;
-}
-
-.history-header button:hover {
-    background-color: var(--history-clear-btn-hover-bg);
-    transform: scale(1.05);
-}
-
-#history-list {
-    list-style: none;
-    padding: 0 10px;
-    margin: 0;
-    flex-grow: 1;
-    overflow-y: auto;
-    color: var(--history-text-color);
-    padding-bottom: 10px;
-}
-
-#history-list li {
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--history-border-color);
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-#history-list li:last-child {
-    border-bottom: none;
-}
-
-#history-list li:hover {
-    background-color: var(--history-hover-bg);
-}
-
-.history-input {
-    font-size: 0.95em;
-    color: var(--history-input-color);
-    word-break: break-all;
-    line-height: 1.3;
-}
-
-.history-result-preview {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--history-result-color);
-    margin-top: 6px;
-    word-break: break-all;
-    display: block;
-}
-
-.history-item-highlight {
-    animation: highlight 1s ease-in-out;
-}
-
-/* Ajuste de colores para que el highlight sea más visible en el tema oscuro */
-@keyframes highlight {
-    0% { background-color: rgba(76, 175, 80, 0.4); } /* Un verde semi-transparente */
-    100% { background-color: transparent; }
-}
-
-/* --- Media Queries para Responsividad --- */
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-    }
-
-    #history-toggle-btn {
-        top: calc(env(safe-area-inset-top, 0px) + 10px);
-        right: calc(env(safe-area-inset-right, 0px) + 10px);
-        width: 45px;
-        height: 45px;
-        z-index: 1002;
-    }
-
-    #history-toggle-btn svg {
-        width: 24px;
-        height: 24px;
-    }
-
-    #history-panel {
-        width: 100vw;
-    }
-
-    /* Ajustes para los botones de navegación en la parte inferior */
-    #divvolver .nav-btn {
-        min-width: unset;
-        flex-basis: auto;
-        font-size: clamp(0.7rem, 2.5vw, 1rem);
-        padding: 8px;
-    }
-    button[data-action="hide-screen"] {
-        max-width: 80px;
-    }
-
-    /* En móviles, ajustamos el tamaño del botón Limpiar */
-    .history-header {
-        padding-right: calc(15px + 45px + 10px);
-    }
-    .history-header button {
-        font-size: 0.75em;
-        padding: 6px 10px;
-        margin-left: 10px;
-    }
-}
-
-/* Añade estas clases a tu style.css si no existen */
-.linea-vertical, .linea-horizontal {
-    position: absolute;
-    background-color: #ddd; /* O el color que desees para las líneas */
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- Animaciones Sorpresa --- */
-
-/* Animación para la aparición de los dígitos */
-.fade-in-scale {
-    opacity: 0;
-    transform: scale(0.5);
-    animation: fadeInScale 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes fadeInScale {
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* La clase .linea ya existe, solo nos aseguramos de que tenga una transición */
-.linea {
-    /* Si ya tienes esta clase, solo añade o asegúrate de que tenga 'transition' */
-    transition: width 0.4s ease-out;
-}
-
-
-
-
-
-/* --- Animaciones para Celdas --- */
-
-.fade-in-scale {
-  /* Estado inicial antes de la animación */
-  opacity: 0;
-  transform: scale(0.5);
-  /* Definición de la animación */
-  animation: fadeInScale-animation 0.4s ease-out forwards;
-}
-
-@keyframes fadeInScale-animation {
-  from {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-
-
-
-
-
-
-
-
-
-/* --- Estilos para el Resumen de División Simple --- */
-
-.division-summary {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  font-size: 2em; /* O el tamaño que prefieras */
-  gap: 1rem; /* Espacio entre las líneas de cociente y resto */
-  color: #ddd;
-}
-
-.division-summary p {
-  margin: 0;
-  padding: 0;
-}
-
-/* Reutilizamos las clases de color que ya tienes */
-.division-summary .caja4 {
-  color: #00ff00; /* Color para el cociente (resultado principal) */
-  font-weight: bold;
-}
-
-.division-summary .caja2 {
-  color: #ccc; /* Color para el resto (resultado secundario) */
-  font-weight: bold;
+    color: #4de89d;
 }
