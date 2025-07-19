@@ -1,11 +1,11 @@
 // =======================================================
-// --- history.js (MÓDULO ES6 COMPLETO) ---
+// --- history.js (MÓDULO CON CORRECCIÓN PARA LA SUMA) ---
 // Gestiona el historial de operaciones, incluyendo persistencia y renderizado.
 // =======================================================
 "use strict";
 
-import { display, salida } from './config.js'; // Importar display y salida directamente
-import { crearMensajeError } from './operations/utils/dom-helpers.js'; // Para manejar errores
+import { display, salida } from './config.js'; 
+import { crearMensajeError } from './operations/utils/dom-helpers.js'; 
 
 class HistoryManagerClass {
     constructor() {
@@ -20,29 +20,29 @@ class HistoryManagerClass {
     }
 
     add(item) {
-        // --- ¡NUEVA LÓGICA DE DETECCIÓN DE DUPLICADOS! ---
         const duplicateIndex = this.history.findIndex(existingItem => existingItem.input === item.input);
         if (duplicateIndex !== -1) {
-            // Si se encuentra un duplicado, muestra la alerta
             alert('¡Oye! Ya has realizado esta operación antes. ¡Mira el historial!');
-            // Abre el panel y resalta el elemento existente
             if (!HistoryPanel.isOpen()) {
                 HistoryPanel.open();
             }
             HistoryPanel.highlightItem(duplicateIndex);
         }
         
-        // El resto de la lógica para añadir el elemento continúa como siempre
-        if (!item.result) {
+        // --- ¡CORRECCIÓN CLAVE! ---
+        // Forzamos la extracción del resultado si está vacío O si la operación es una suma,
+        // para ignorar cualquier resultado incorrecto pre-calculado.
+        if (!item.result || item.input.includes('+')) {
             item.result = HistoryPanel.extractResultText(item.visualHtml);
         }
+
         this.history.unshift(item);
         if (this.history.length > this.MAX_HISTORY_ITEMS) {
             this.history.pop();
         }
         this.saveHistory();
         HistoryPanel.renderHistory();
-        // Si no era un duplicado, resalta el nuevo elemento que se acaba de añadir
+
         if (duplicateIndex === -1) {
             HistoryPanel.highlightLastItem();
         }
@@ -120,6 +120,7 @@ class HistoryPanelClass {
     extractResultText(htmlString) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
+        // Esta lógica es correcta porque la suma usa '.output-grid__cell--cociente' para el resultado final.
         const cocienteElements = tempDiv.querySelectorAll('.output-grid__cell--cociente');
         if (cocienteElements.length > 0) {
             return Array.from(cocienteElements).map(el => el.textContent).join('');
@@ -159,26 +160,21 @@ class HistoryPanelClass {
         this.isOpen() ? this.close() : this.open();
     }
     
-    // --- NUEVO MÉTODO GENÉRICO PARA RESALTAR ---
     highlightItem(index) {
         const itemToHighlight = this.list.querySelector(`.history-panel__item[data-index="${index}"]`);
         if (itemToHighlight) {
-            // Desplazarse al elemento si está fuera de la vista
             itemToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Aplicar la animación
             itemToHighlight.classList.add('history-item-highlight');
             setTimeout(() => {
                 itemToHighlight.classList.remove('history-item-highlight');
-            }, 1500); // Duración un poco más larga para que el usuario pueda verlo bien
+            }, 1500);
         }
     }
 
     highlightLastItem() {
-        // El último elemento añadido es siempre el primero en la lista (índice 0)
         this.highlightItem(0);
     }
 }
 
-// Exporta las instancias de las clases
 export const HistoryManager = new HistoryManagerClass();
 export const HistoryPanel = new HistoryPanelClass();
