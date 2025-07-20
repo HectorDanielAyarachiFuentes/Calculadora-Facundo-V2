@@ -1,18 +1,38 @@
 /* ======================================================= */
-/* --- style.css (VERSIÓN FINAL COMPLETA) --- */
+/* --- style.css (VERSIÓN REFACTORIZADA Y OPTIMIZADA) --- */
 /* ======================================================= */
 
 /* --- FUENTES Y VARIABLES GLOBALES --- */
-/* Importamos las nuevas fuentes combinadas */
+/* 
+  Fuentes importadas con un propósito específico:
+  - Quicksand: Legible y amigable, ideal para texto general y escolar.
+  - Chakra Petch: Estilo digital/mecánico para botones y pantalla.
+  - Titillium Web: Moderna y técnica para el título principal.
+  - Outfit: Limpia y funcional para la navegación.
+*/
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Quicksand:wght@400;700&family=Outfit:wght@400;700&family=Titillium+Web:wght@700&display=swap');
 
 :root {
+    /* Paleta de Colores */
     --bg-main: #121212;
     --bg-grid-lines: rgba(200, 200, 200, 0.04);
     --bg-display: #1a1a1a;
     --bg-keyboard: #000;
     --bg-output-screen: #111;
+    --history-panel-bg: #1f1f1f;
+    --history-header-bg: #2b2b2b;
+    --nav-bg: #333;
+
     --color-display-text: #f0e68c;
+    --history-text-color: #e0e0e0;
+    --history-input-color: #b0b0b0;
+    --history-border-color: #404040;
+    --history-hover-bg: #333333;
+    --color-lineas-output: #ddd;
+    --color-error: #e84d4d;
+    --focus-color: #66FF66;
+
+    /* Colores de Botones */
     --btn-num-bg: #FFFF66;
     --btn-op-bg: #FF3333;
     --btn-special-bg: #6666FF;
@@ -20,138 +40,94 @@
     --btn-text-color: #000;
     --btn-disabled-bg: #333;
     --btn-disabled-text: #666;
-    --nav-height: 60px;
-    --nav-bg: #333;
-    --focus-color: #66FF66;
-    --history-panel-bg: #1f1f1f;
-    --history-header-bg: #2b2b2b;
-    --history-border-color: #404040;
-    --history-text-color: #e0e0e0;
-    --history-input-color: #b0b0b0;
-    --history-hover-bg: #333333;
     --history-clear-btn-bg: #e74c3c;
     --history-clear-btn-hover-bg: #c0392b;
-    --color-lineas: #ddd;
-    --color-error: #e84d4d;
+
+    /* Dimensiones */
+    --nav-height: 60px;
 }
 
-/* --- RESET Y BASE --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-/* Fuente principal para el cuerpo: Quicksand (escolar, legible) */
-body { display: flex; justify-content: center; align-items: center; min-height: 100dvh; background-color: var(--bg-main); background-image: repeating-linear-gradient(90deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px), repeating-linear-gradient(0deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px); padding: 20px; font-family: 'Quicksand', sans-serif; overflow: hidden; }
-button { outline: none; border: none; font-family: inherit; cursor: pointer; }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; }
-
-/* --- ESTRUCTURA PRINCIPAL --- */
-.calculator-container { position: relative; opacity: 0; transition: opacity 1s; width: 100%; max-width: 480px; }
-/* Pantalla: Chakra Petch (digital, moderno-escolar) */
-.display { background-color: var(--bg-display); color: var(--color-display-text); text-align: right; width: 100%; padding: 20px; font-size: 2.2rem; overflow: hidden; border-radius: 10px; min-height: 65px; word-wrap: break-word; display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px; font-family: 'Chakra Petch', sans-serif; }
-.keyboard-container { position: relative; background-color: var(--bg-keyboard); width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
-
-/* ======================================================= */
-/* --- COMPONENTE: TECLADO (Keyboard) --- */
-/* ======================================================= */
-.keyboard { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: top 0.5s ease-in-out, opacity 0.3s ease-in-out; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 2px; z-index: 2; }
-.keyboard--hidden { top: 100%; opacity: 0; pointer-events: none; }
-/* Botones del teclado: Chakra Petch (digital, moderno-escolar) */
-.keyboard__button { font-size: 1.4rem; color: var(--btn-text-color); display: flex; justify-content: center; align-items: center; border: 2px solid #000; font-family: 'Chakra Petch', sans-serif; transition: transform 0.1s ease, background-color 0.2s ease; }
-.keyboard__button:disabled { background-color: var(--btn-disabled-bg) !important; color: var(--btn-disabled-text); cursor: not-allowed; }
-.keyboard__button--number { background-color: var(--btn-num-bg); }
-.keyboard__button--operator { background-color: var(--btn-op-bg); }
-.keyboard__button--special { background-color: var(--btn-special-bg); font-size: 0.8em; }
-.keyboard__button--equals { background-color: var(--btn-equal-bg); }
-.keyboard__button--double-width { grid-column: span 2; }
-.keyboard__button--triple-width { grid-column: span 3; }
-
-/* ======================================================= */
-/* --- COMPONENTE: PANTALLA DE SALIDA (Output Screen) --- */
-/* ======================================================= */
-.output-screen { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    background-color: var(--bg-output-screen); 
-    width: 100%; 
-    height: calc(100% - var(--nav-height)); 
-    transition: opacity 0.3s ease-in-out; 
-    padding: 15px; 
-    overflow: auto; 
-    z-index: 1; 
-    opacity: 0; 
-    pointer-events: none; 
+/* --- RESET Y ESTILOS BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-.output-screen--visible { opacity: 1; pointer-events: all; }
 
-/* Celdas de la cuadrícula de salida: Quicksand (escolar, legible) */
-.output-grid__cell { 
-    position: absolute; 
-    font-family: 'Quicksand', sans-serif; 
+/* Fuente base: Quicksand (escolar, legible) */
+body {
     display: flex;
-    align-items: center;   /* Centra el contenido verticalmente */
-    justify-content: center; /* Centra el contenido horizontalmente */
+    justify-content: center;
+    align-items: center;
+    min-height: 100dvh;
+    padding: 20px;
+    background-color: var(--bg-main);
+    background-image: repeating-linear-gradient(90deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px), repeating-linear-gradient(0deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px);
+    font-family: 'Quicksand', sans-serif;
+    overflow: hidden;
 }
 
-.output-grid__line { position: absolute; background-color: var(--color-lineas); }
-.output-grid__cell--dividendo { color: #ff8c00; }
-.output-grid__cell--divisor { color: #6495ed; }
-.output-grid__cell--cociente { color: #00ff00; }
-.output-grid__cell--producto { color: #ccc; }
-.output-grid__cell--resto { color: #f08080; }
-.output-screen__error-message { color: var(--color-error); font-size: 1.2rem; text-align: center; width: 90%; position: relative; margin: auto; }
+button {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+/* Estilo de foco consistente para accesibilidad */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--focus-color);
+    outline-offset: 2px;
+}
 
 /* ======================================================= */
-/* --- COMPONENTE: NAVEGACIÓN INFERIOR (Bottom Nav) --- */
+/* --- ESTRUCTURA PRINCIPAL Y COMPONENTES --- */
 /* ======================================================= */
-.bottom-nav { position: absolute; bottom: -100%; left: 0; width: 100%; height: var(--nav-height); transition: bottom 0.5s ease-in-out; background-color: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; padding: 10px; z-index: 3; gap: 8px; opacity: 0; pointer-events: none; }
-.bottom-nav--visible { bottom: 0; opacity: 1; pointer-events: all; }
-.bottom-nav__button { color: rgba(255, 255, 255, 0.8); background-color: rgba(255, 255, 255, 0.08); padding: 10px; border-radius: 5px; flex-grow: 1; text-align: center; }
-.bottom-nav__button:hover { background-color: rgba(255, 255, 255, 0.2); color: white; }
-/* Botón de navegación: Outfit (limpio, moderno, funcional) */
-.bottom-nav__button--arrow { font-family: 'Outfit', sans-serif; font-size: 1.5rem; }
 
-/* ======================================================= */
-/* --- ANIMACIONES --- */
-/* ======================================================= */
-.animate-fade-in-scale { opacity: 0; transform: scale(0.5); animation: fadeInScale-animation 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes fadeInScale-animation { to { opacity: 1; transform: scale(1); } }
+/* --- Contenedor Principal --- */
+.calculator-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    opacity: 0;
+    transition: opacity 1s;
+}
 
-/* ======================================================= */
-/* --- COMPONENTE: HEADER (Título Principal) --- */
-/* ======================================================= */
+/* --- Título (Header) --- */
 header[role="banner"] {
     margin-bottom: 25px;
     text-align: center;
 }
 
-/* Título principal: Titillium Web (moderno, técnico, "header de manual escolar") */
+/* Título principal: Titillium Web (moderno, técnico) */
 header h1 {
-    font-family: 'Titillium Web', sans-serif; 
-    font-size: clamp(1.5rem, 6vw, 3.5rem); 
-    font-weight: 700; /* Puedes ajustar este peso */
+    font-family: 'Titillium Web', sans-serif;
+    font-size: clamp(1.5rem, 6vw, 3.5rem);
+    font-weight: 700;
     line-height: 1;
     letter-spacing: 2px;
-    color: #e84d4d; 
+    color: var(--color-error);
     text-transform: uppercase;
     text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 header h1 span {
-    color: #4de89d; 
+    color: #4de89d;
 }
 
-/* Subtítulo: Quicksand (escolar, legible) */
+/* Subtítulo: Quicksand (heredado de body) */
 header .subtitle {
-    font-size: clamp(0.7rem, 2vw, 0.9rem);
-    color: #e84d4d;
     margin-top: 15px;
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+    color: var(--color-error);
     opacity: 0.8;
-    font-family: 'Quicksand', sans-serif;
 }
 
 header .subtitle a {
-    color: var(--btn-special-bg, #6666FF); 
-    text-decoration: underline;
+    color: var(--btn-special-bg);
     font-weight: bold;
+    text-decoration: underline;
     transition: color 0.2s ease;
 }
 
@@ -159,248 +135,405 @@ header .subtitle a:hover {
     color: #4de89d;
 }
 
-/* ======================================================= */
-/* --- COMPONENTE: HISTORIAL (History Panel) (Versión con botón LIMPIAR a la izquierda) --- */
-/* ======================================================= */
+/* --- Pantalla de la Calculadora (Display) --- */
+/* Fuente: Chakra Petch (digital, moderno) */
+.display {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    min-height: 65px;
+    margin-bottom: 15px;
+    padding: 20px;
+    background-color: var(--bg-display);
+    color: var(--color-display-text);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 2.2rem;
+    text-align: right;
+    border-radius: 10px;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+/* --- Contenedor de Teclado y Salida --- */
+.keyboard-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--bg-keyboard);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* --- Teclado (Keyboard) --- */
+.keyboard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+    transition: top 0.5s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.keyboard--hidden {
+    top: 100%;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Botones: Chakra Petch (digital, moderno) */
+.keyboard__button {
+    position: relative; /* Para el efecto hover */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--btn-text-color);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 1.4rem;
+    border: 2px solid #000;
+    overflow: hidden; /* Para el efecto hover */
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+/* --- Variantes de Botones --- */
+.keyboard__button--number { background-color: var(--btn-num-bg); }
+.keyboard__button--operator { background-color: var(--btn-op-bg); }
+.keyboard__button--special { background-color: var(--btn-special-bg); font-size: 0.8em; }
+.keyboard__button--equals { background-color: var(--btn-equal-bg); }
+.keyboard__button--double-width { grid-column: span 2; }
+.keyboard__button--triple-width { grid-column: span 3; }
+
+/* --- Estado de Botones (Hover y Deshabilitado) --- */
+.keyboard__button:not(:disabled):hover {
+    background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+    background-size: 200% 200%;
+    animation: arcoiris 2s linear infinite;
+    transform: scale(1.05);
+}
+
+/* Regla única y consolidada para botones deshabilitados */
+.keyboard__button:disabled {
+    background-color: var(--btn-disabled-bg) !important; /* !important para sobreescribir estilos base */
+    color: var(--btn-disabled-text);
+    cursor: not-allowed;
+    animation: none !important;
+    transform: none !important;
+}
+
+/* --- Pantalla de Salida (Output Screen) --- */
+.output-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: calc(100% - var(--nav-height));
+    padding: 15px;
+    background-color: var(--bg-output-screen);
+    opacity: 0;
+    pointer-events: none;
+    overflow: auto;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.output-screen--visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Celdas de salida: Quicksand (heredado de body) */
+.output-grid__cell {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.output-grid__line {
+    position: absolute;
+    background-color: var(--color-lineas-output);
+}
+.output-grid__cell--dividendo { color: #ff8c00; }
+.output-grid__cell--divisor { color: #6495ed; }
+.output-grid__cell--cociente { color: #00ff00; }
+.output-grid__cell--producto { color: #ccc; }
+.output-grid__cell--resto { color: #f08080; }
+.output-grid__cell--suma-intermedia { 
+    color: #f0ad4e;
+    font-weight: bold;
+    z-index: 10;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.output-screen__error-message {
+    position: relative;
+    width: 90%;
+    margin: auto;
+    color: var(--color-error);
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+/* --- Navegación Inferior (Bottom Nav) --- */
+.bottom-nav {
+    position: absolute;
+    bottom: -100%;
+    left: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: var(--nav-height);
+    padding: 10px;
+    background-color: var(--nav-bg);
+    opacity: 0;
+    pointer-events: none;
+    transition: bottom 0.5s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.bottom-nav--visible {
+    bottom: 0;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.bottom-nav__button {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.bottom-nav__button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Botón de flecha: Outfit (limpio, funcional) */
+.bottom-nav__button--arrow {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+}
+
+/* --- Panel de Historial (History Panel) --- */
 .history-toggle-btn {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 1002; 
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
+    z-index: 1002;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: var(--nav-bg);
+    border: 1px solid #555;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
     transition: background-color 0.3s, transform 0.2s, opacity 0.3s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
-.history-toggle-btn:hover { background-color: #4CAF50; transform: scale(1.1); }
-.history-toggle-btn svg { width: 28px; height: 28px; fill: #eee; }
+
+.history-toggle-btn:hover {
+    background-color: #4CAF50;
+    transform: scale(1.1);
+}
+
+.history-toggle-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: #eee;
+}
 
 .history-panel.history-panel--open + .history-toggle-btn {
     opacity: 0;
-    pointer-events: none; 
+    pointer-events: none;
 }
 
+/* Panel principal: Quicksand para todo el texto por herencia */
 .history-panel {
     position: fixed;
     top: 0;
-    right: -100%; 
-    width: 350px; 
-    max-width: 100vw;
-    height: 100dvh;
-    background-color: var(--history-panel-bg);
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-    z-index: 1000; 
+    right: -100%;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    width: 350px;
+    max-width: 100vw;
+    height: 100dvh;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-sizing: border-box;
-    visibility: hidden; 
+    background-color: var(--history-panel-bg);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+    font-family: 'Quicksand', sans-serif; /* Fuente base para todo el panel */
+    visibility: hidden;
+    transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
-.history-panel--open { right: 0; visibility: visible; }
+
+.history-panel--open {
+    right: 0;
+    visibility: visible;
+}
 
 .history-panel__header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    flex-shrink: 0;
     padding: 15px 20px;
     background-color: var(--history-header-bg);
     border-bottom: 1px solid var(--history-border-color);
-    flex-shrink: 0; 
 }
-/* Título del historial: Quicksand (escolar, legible) */
+
 .history-panel__title {
     margin: 0;
     font-size: 1.3em;
-    color: var(--history-text-color);
     font-weight: bold;
-    font-family: 'Quicksand', sans-serif;
+    color: var(--history-text-color);
 }
 
-/* Botón "Limpiar": Chakra Petch (digital, moderno-escolar) */
+/* Botón Limpiar: Chakra Petch */
 .history-panel__clear-btn {
+    flex-shrink: 0;
+    margin-left: 20px;
+    padding: 8px 15px;
     background-color: var(--history-clear-btn-bg);
     color: #fff;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    font-family: 'Chakra Petch', sans-serif; /* Sobreescribe la fuente heredada */
     font-size: 0.85em;
-    font-family: 'Chakra Petch', sans-serif; 
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-left: 20px; 
-    flex-shrink: 0; 
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
 }
-.history-panel__clear-btn:hover { background-color: var(--history-clear-btn-hover-bg); transform: scale(1.05); }
 
-.history-panel__list { list-style: none; padding: 0 10px; margin: 0; flex-grow: 1; overflow-y: auto; color: var(--history-text-color); padding-bottom: 10px; }
-/* Ítems del historial: Quicksand (escolar, legible) */
+.history-panel__clear-btn:hover {
+    background-color: var(--history-clear-btn-hover-bg);
+    transform: scale(1.05);
+}
+
+.history-panel__list {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0 10px 10px;
+    list-style: none;
+    color: var(--history-text-color);
+    overflow-y: auto;
+}
+
 .history-panel__item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     padding: 12px 10px;
     border-bottom: 1px solid var(--history-border-color);
     cursor: pointer;
     transition: background-color 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-family: 'Quicksand', sans-serif;
-}
-.history-panel__item:last-child { border-bottom: none; }
-.history-panel__item:hover { background-color: var(--history-hover-bg); }
-
-/* Entrada y resultado del historial: Quicksand (escolar, legible) */
-.history-panel__input { font-size: 0.95em; color: var(--history-input-color); word-break: break-all; line-height: 1.3; font-family: 'Quicksand', sans-serif;}
-.history-panel__result { font-size: 1.2em; font-weight: bold; color: var(--color-display-text); margin-top: 6px; word-break: break-all; display: block; font-family: 'Quicksand', sans-serif;}
-
-.history-item-highlight { animation: highlight 1s ease-in-out; }
-@keyframes highlight { 0% { background-color: rgba(76, 175, 80, 0.4); } 100% { background-color: transparent; } }
-
-/* ============================================== */
-/* --- DISEÑO RESPONSIVE PARA MÓVILES --- */
-/* ============================================== */
-@media (max-width: 600px) {
-    body { padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px); }
-    #contenedor { width: 100% !important; max-width: none !important; }
-    #cuerpoteclado { width: 100% !important; }
-
-    header h1 { font-size: 12vw !important; letter-spacing: 1px !important; }
-    header .subtitle { font-size: 3.5vw !important; }
-    /* Ajuste para Chakra Petch en display responsivo */
-    #display { font-size: 10vw !important; padding: 15px; }
-    /* Ajuste para Chakra Petch en botones responsivos */
-    #teclado button { font-size: 6vw; }
-    #volver { font-size: 7vw !important; } 
-    #botexp, #botnor { font-size: 3.5vw !important; padding: 8px; }
-    .error { font-size: 4.5vw !important; padding-top: 25%; }
-    #salida { font-size: 5vw !important; } 
-    .caja, .caja2, .caja3, .caja4 { font-size: inherit !important; }
 }
 
-@media (max-width: 400px) {
-    body { padding: 8px env(safe-area-inset-right, 8px) 8px env(safe-area-inset-left, 8px); }
-    header { margin-bottom: 15px; }
-    header h1 { font-size: 10vw !important; }
-    header .subtitle { font-size: 3.2vw !important; margin-top: 10px; }
-    /* Ajuste para Chakra Petch en display responsivo */
-    #display { font-size: 9.5vw !important; padding: 12px; min-height: 50px; }
-    /* Ajuste para Chakra Petch en botones responsivos */
-    #teclado button { font-size: 5.5vw; }
-    #volver { font-size: 6vw !important; }
-    #botexp, #botnor { font-size: 3.2vw !important; padding: 7px; }
-    .error { font-size: 4vw !important; }
+.history-panel__item:last-child {
+    border-bottom: none;
+}
+
+.history-panel__item:hover {
+    background-color: var(--history-hover-bg);
+}
+
+.history-panel__item.history-item-highlight {
+    /* No necesita transition, la animación se encarga de todo */
+    animation: history-item-highlight 1.5s ease-out forwards;
+}
+
+.history-panel__input {
+    font-size: 0.95em;
+    line-height: 1.3;
+    color: var(--history-input-color);
+    word-break: break-all;
+}
+
+.history-panel__result {
+    display: block;
+    margin-top: 6px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--color-display-text);
+    word-break: break-all;
 }
 
 
-/* --- Animación Arcoíris Optimizada --- */
+/* ======================================================= */
+/* --- ANIMACIONES GLOBALES (@keyframes) --- */
+/* ======================================================= */
+
+/* Animación de entrada para elementos */
+@keyframes fadeInScale-animation {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+.animate-fade-in-scale {
+    opacity: 0;
+    transform: scale(0.5);
+    animation: fadeInScale-animation 0.5s forwards cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animación de hover para botones */
 @keyframes arcoiris {
     0% { background-position: 0% 50% }
     50% { background-position: 100% 50% }
     100% { background-position: 0% 50% }
 }
-.keyboard__button {
-    position: relative; 
-    overflow: hidden; 
-}
 
-.keyboard__button:not(:disabled):hover {
-    background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
-    background-size: 200% 200%; 
-    animation: arcoiris 2s linear infinite; 
-    transform: scale(1.05); 
+/* Animación de pulso consolidada (para resta, suma, etc.) */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
 }
-
-.keyboard__button:disabled {
-    background-color: var(--btn-disabled-bg) !important;
-    color: var(--btn-disabled-text);
-    cursor: not-allowed;
-    animation: none !important; 
-    transform: none !important; 
-}
-
-/* --- ANIMACIÓN DE BUCLE PARA RESTA --- */
-@keyframes pulse-animation {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 .pulse {
-  animation: pulse-animation 0.5s ease-in-out;
+    animation: pulse 0.5s ease-in-out;
 }
 
-/* --- ANIMACIÓN DE BUCLE PARA SUMA --- */
-
-.output-grid__cell--suma-intermedia {
-  color: #f0ad4e; 
-  transition: opacity 0.3s ease-in-out;
-  opacity: 1;
-  z-index: 10; 
-  text-align: center;
-  font-weight: bold;
-}
-
+/* Animación de entrada para celdas de suma */
 @keyframes fadeIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-.output-grid__cell--suma-intermedia {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.pulse {
-  animation: pulse-effect 0.5s cubic-bezier(.36,.07,.19,.97) both;
-}
-
-@keyframes pulse-effect {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.output-grid__cell--suma-intermedia {
-  color: #f0ad4e; 
-  font-weight: bold;
-  text-align: center;
-  z-index: 10;
-}
-
-/* Agrega esto a tu archivo CSS */
-
-/* Define la animación de pulso */
-@keyframes pulse-highlight {
+/* Animación de resaltado para ítems del historial */
+@keyframes history-item-highlight {
     0% {
-        background-color: transparent; 
+        background-color: transparent;
         transform: scale(1);
     }
     50% {
-        background-color: rgba(255, 255, 0, 0.2); 
-        transform: scale(1.02); 
+        background-color: rgba(76, 175, 80, 0.4);
+        transform: scale(1.02);
     }
     100% {
-        background-color: transparent; 
+        background-color: transparent;
         transform: scale(1);
     }
 }
 
-.history-panel__item.history-item-highlight {
-    animation: pulse-highlight 1.5s ease-out forwards; 
-    transition: none; 
-}
+
+
+
+/* ======================================================= */
+/* --- MEDIA QUERIES PARA VISTAS MÓVILES (PANTALLA COMPLETA) --- */
+/* ======================================================= */
+
+
+
