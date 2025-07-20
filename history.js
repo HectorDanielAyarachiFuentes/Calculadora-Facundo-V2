@@ -6,6 +6,9 @@
 
 import { display, salida } from './config.js'; 
 import { crearMensajeError } from './operations/utils/dom-helpers.js'; 
+// *** Importación clave: Asegúrate de que esta ruta sea correcta para tu main.js ***
+import { reExecuteOperationFromHistory } from './main.js'; 
+
 
 class HistoryManagerClass {
     constructor() {
@@ -19,7 +22,8 @@ class HistoryManagerClass {
         HistoryPanel.renderHistory();
     }
 
-    add(item) {
+    // *** MODIFICACIÓN: Este método debe ser asíncrono para usar 'await' ***
+    async add(item) {
         const duplicateIndex = this.history.findIndex(existingItem => existingItem.input === item.input);
         if (duplicateIndex !== -1) {
             alert('¡Oye! Ya has realizado esta operación antes. ¡Mira el historial!');
@@ -27,10 +31,16 @@ class HistoryManagerClass {
                 HistoryPanel.open();
             }
             HistoryPanel.highlightItem(duplicateIndex);
+            
+            // *** CAMBIO: Re-ejecutar la operación duplicada usando la función de main.js ***
+            await reExecuteOperationFromHistory(this.history[duplicateIndex].input);
+            // *****************************************************************************
             return; // Detener para no añadir duplicado
         }
         
-        if (!item.result || item.input.includes('+')) {
+        // La lógica para extraer el resultado debería ser robusta si main.js pasa visualHtml
+        // Simplificamos la condición ya que 'item.result' puede venir vacío y se extrae.
+        if (!item.result) { 
             item.result = HistoryPanel.extractResultText(item.visualHtml);
         }
 
@@ -41,9 +51,8 @@ class HistoryManagerClass {
         this.saveHistory();
         HistoryPanel.renderHistory();
 
-        if (duplicateIndex === -1) {
-            HistoryPanel.highlightLastItem();
-        }
+        // Resaltar el último elemento (el nuevo está en la posición 0)
+        HistoryPanel.highlightLastItem();
     }
 
     getHistory() { return this.history; }
@@ -76,7 +85,6 @@ class HistoryPanelClass {
 
     addEventListeners() {
         if (this.toggleButton) {
-            // Hacemos que el toggle no se propague para no interferir con el listener del documento.
             this.toggleButton.addEventListener('click', (e) => {
                 e.stopPropagation(); 
                 this.toggle();
@@ -107,9 +115,12 @@ class HistoryPanelClass {
                 <span class="history-panel__input">${item.input}</span>
                 <span class="history-panel__result">= ${item.result}</span>
             `;
-            li.addEventListener('click', () => {
-                salida.innerHTML = item.visualHtml; 
-                display.innerHTML = item.input;
+            // *** MODIFICACIÓN: Hacer el callback asíncrono y usar la función de main.js ***
+            li.addEventListener('click', async () => { // <--- Añadido 'async' aquí
+                await reExecuteOperationFromHistory(item.input); // <--- Nueva llamada con 'await'
+                // Ya no necesitamos salida.innerHTML = item.visualHtml; ni display.innerHTML = item.input;
+                // reExecuteOperationFromHistory se encarga de eso.
+                // ********************************************************************************
                 this.close();
             });
             this.list.appendChild(li);
@@ -132,10 +143,8 @@ class HistoryPanelClass {
         return tempDiv.textContent.trim().split('\n')[0] || 'Resultado';
     }
     
-    // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
+    // --- Lógica para cerrar el panel al hacer clic fuera (sin cambios) ---
     handleOutsideClick(event) {
-        // Cierra el panel SÓLO si el clic está fuera del panel Y TAMBIÉN fuera del botón que lo abre.
-        // Esto evita que se cierre al hacer clic en otros botones de la interfaz.
         if (this.isOpen() && !this.panel.contains(event.target) && !this.toggleButton.contains(event.target)) {
             this.close();
         }
@@ -148,7 +157,6 @@ class HistoryPanelClass {
     open() {
         if (this.isOpen()) return;
         this.panel.classList.add('history-panel--open');
-        // Usamos setTimeout para que el listener se añada después del ciclo de eventos actual
         setTimeout(() => document.addEventListener('click', this.handleOutsideClick), 0);
     }
 

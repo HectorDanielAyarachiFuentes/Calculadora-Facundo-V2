@@ -93,14 +93,62 @@ function handleKeyboardInput(event) {
     else if (key === 'Delete' || key === 'Escape') escribir('c');
 }
 
-// ¡¡¡ AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL !!!
+// *** ¡CORRECCIÓN PRINCIPAL AQUÍ: reExecuteOperationFromHistory! ***
+// Esta función es llamada desde history.js para re-ejecutar cualquier tipo de operación.
+export async function reExecuteOperationFromHistory(historyInput) {
+    bajarteclado();                   // 1. Muestra la pantalla de salida y oculta el teclado
+    salida.innerHTML = "";            // 2. Limpia la salida para la nueva operación
+
+    let calculationSuccessful = false;
+    
+    // Patrones para identificar el tipo de operación
+    const primosMatch = historyInput.match(/^factores\((\d+)\)$/);
+    const raizMatch = historyInput.match(/^√\((\d+)\)$/);
+    
+    // Guardamos el contenido original de display si es necesario para reestablecerlo
+    const originalDisplayContent = display.innerHTML;
+
+    try {
+        if (primosMatch) {
+            const numero = primosMatch[1]; // Extrae solo el número "145"
+            display.innerHTML = numero; // *** TEMPORALMENTE: Pon solo el número en el display ***
+            await desFacPri(numero); // Llama a la función de factores primos
+            calculationSuccessful = !salida.querySelector('.output-screen__error-message');
+        } else if (raizMatch) {
+            const numero = raizMatch[1]; // Extrae solo el número "144"
+            display.innerHTML = numero; // *** TEMPORALMENTE: Pon solo el número en el display ***
+            await raizCuadrada(numero); // Llama a la función de raíz cuadrada
+            calculationSuccessful = !salida.querySelector('.output-screen__error-message');
+        } else {
+            // Para operaciones binarias, el display debe contener la expresión completa
+            display.innerHTML = historyInput; // Establece la expresión completa (ej. "652/69")
+            await calcular(false); // Llama a calcular, diciéndole que NO añada al historial
+            calculationSuccessful = !salida.querySelector('.output-screen__error-message');
+        }
+    } catch (error) {
+        console.error("Error durante la re-ejecución desde el historial:", error);
+        salida.appendChild(crearMensajeError(errorMessages.genericError));
+        calculationSuccessful = false;
+    } finally {
+        // *** CRUCIAL: Vuelve a poner el formato original del historial en el display ***
+        // Esto es para que el display muestre "factores(145)" o "√(144)" o "652/69"
+        display.innerHTML = historyInput; 
+        activadoBotones(display.innerHTML); // 4. Actualiza el estado de los botones
+    }
+
+    return calculationSuccessful; // Retorna si la re-ejecución fue exitosa
+}
+
+
+// --- handleAction: Refactorizado para usar la función unificada ---
 async function handleAction(action) {
     switch (action) {
         case 'view-screen':
             bajarteclado();
             break;
         case 'calculate':
-            await calcular();
+            // Pasar 'true' para indicar que es un cálculo nuevo y se añada al historial
+            await calcular(true); 
             break;
         case 'clear':
             escribir('c');
@@ -112,49 +160,53 @@ async function handleAction(action) {
             subirteclado();
             break;
         case 'divide-expanded':
-            divideExpandida(true);
+            divext = true; // Establece el modo a expandido
+            // Re-ejecuta la última división si existe
+            if (lastDivisionState.tipo === 'division' && lastDivisionState.operacionInput) {
+                // Llama a reExecuteOperationFromHistory con la última operación de división
+                await reExecuteOperationFromHistory(lastDivisionState.operacionInput);
+            } else {
+                actualizarEstadoDivisionUI(false); // Si no hay división previa, ocultar los botones
+            }
             break;
         case 'divide-normal':
-            divideExpandida(false);
-            break;
-
-        // --- CÓDIGO AÑADIDO PARA FACTORES PRIMOS ---
-        case 'primos':
-            bajarteclado();
-            salida.innerHTML = ""; // Limpiar pantalla de salida
-            const numeroPrimos = display.innerHTML;
-            try {
-                await desFacPri(numeroPrimos); // Llamar a la función de cálculo
-                // Añadir al historial si no hay error
-                if (!salida.querySelector('.output-screen__error-message')) {
-                    HistoryManager.add({
-                        input: `factores(${numeroPrimos})`,
-                        visualHtml: salida.innerHTML
-                    });
-                }
-            } catch (error) {
-                console.error("Error al calcular factores primos:", error);
-                salida.appendChild(crearMensajeError(errorMessages.genericError));
+            divext = false; // Establece el modo a normal
+            // Re-ejecuta la última división si existe
+            if (lastDivisionState.tipo === 'division' && lastDivisionState.operacionInput) {
+                // Llama a reExecuteOperationFromHistory con la última operación de división
+                await reExecuteOperationFromHistory(lastDivisionState.operacionInput);
+            } else {
+                actualizarEstadoDivisionUI(false); // Si no hay división previa, ocultar los botones
             }
             break;
 
-        // --- CÓDIGO AÑADIDO PARA RAÍZ CUADRADA ---
+        // --- CÓDIGO PARA FACTORES PRIMOS (modificado para usar reExecuteOperationFromHistory) ---
+        case 'primos':
+            const numeroPrimos = display.innerHTML; // Obtiene el número del display
+            const inputParaHistorialPrimos = `factores(${numeroPrimos})`; // Crea el formato para el historial
+            // Usa reExecuteOperationFromHistory para ejecutar y actualizar la UI
+            const primosSuccess = await reExecuteOperationFromHistory(inputParaHistorialPrimos); 
+            if (primosSuccess) {
+                // Solo añade al historial si la operación fue exitosa
+                HistoryManager.add({
+                    input: inputParaHistorialPrimos,
+                    visualHtml: salida.innerHTML
+                });
+            }
+            break;
+
+        // --- CÓDIGO PARA RAÍZ CUADRADA (modificado para usar reExecuteOperationFromHistory) ---
         case 'raiz':
-            bajarteclado();
-            salida.innerHTML = ""; // Limpiar pantalla de salida
-            const numeroRaiz = display.innerHTML;
-            try {
-                await raizCuadrada(numeroRaiz); // Llamar a la función de cálculo
-                // Añadir al historial si no hay error
-                if (!salida.querySelector('.output-screen__error-message')) {
-                    HistoryManager.add({
-                        input: `√(${numeroRaiz})`,
-                        visualHtml: salida.innerHTML
-                    });
-                }
-            } catch (error) {
-                console.error("Error al calcular la raíz cuadrada:", error);
-                salida.appendChild(crearMensajeError(errorMessages.genericError));
+            const numeroRaiz = display.innerHTML; // Obtiene el número del display
+            const inputParaHistorialRaiz = `√(${numeroRaiz})`; // Crea el formato para el historial
+            // Usa reExecuteOperationFromHistory para ejecutar y actualizar la UI
+            const raizSuccess = await reExecuteOperationFromHistory(inputParaHistorialRaiz); 
+            if (raizSuccess) {
+                // Solo añade al historial si la operación fue exitosa
+                HistoryManager.add({
+                    input: inputParaHistorialRaiz,
+                    visualHtml: salida.innerHTML
+                });
             }
             break;
 
@@ -205,8 +257,9 @@ function escribir(t) {
     actualizarEstadoDivisionUI(false); 
 }
 
-async function calcular() {
-    const entrada = display.innerHTML;
+// *** MODIFICACIÓN: calcular ahora acepta un parámetro para controlar si añade al historial ***
+async function calcular(addToHistory = true) { // Añade el parámetro con valor por defecto 'true'
+    const entrada = display.innerHTML; // 'display.innerHTML' ya contendrá la expresión correcta
     const operadorMatch = entrada.match(/[\+\-x/]/);
 
     if (!operadorMatch || !/^-?[0-9,]+\s*[+\-x/]\s*(-?[0-9,]+)?$/.test(entrada) || ['+', '-', 'x', '/'].includes(entrada.slice(-1)) || entrada.endsWith(',')) { 
@@ -214,7 +267,7 @@ async function calcular() {
         salida.appendChild(crearMensajeError(errorMessages.invalidOperation));
         bajarteclado();
         actualizarEstadoDivisionUI(false);
-        return;
+        return; 
     }
 
     const operador = operadorMatch[0];
@@ -242,7 +295,8 @@ async function calcular() {
         actualizarEstadoDivisionUI(false);
     }
 
-    if (!calculationError) {
+    // *** MODIFICACIÓN: Solo añade al historial si 'addToHistory' es true ***
+    if (addToHistory && !calculationError) {
         HistoryManager.add({ input: entrada, visualHtml: salida.innerHTML });
     }
     activadoBotones(display.innerHTML);
@@ -254,13 +308,12 @@ function divideExpandida(esExpandida) {
     actualizarEstadoDivisionUI(true); 
     bajarteclado(); 
 
-    requestAnimationFrame(() => {
-        if (!lastDivisionState.numerosAR || lastDivisionState.tipo !== 'division') {
+    requestAnimationFrame(async () => { 
+        if (!lastDivisionState.operacionInput || lastDivisionState.tipo !== 'division') { 
             salida.appendChild(crearMensajeError(errorMessages.noDivisionCalculated));
             return;
         }
-        salida.innerHTML = ""; 
-        divext ? divideExt(lastDivisionState.numerosAR) : divide(lastDivisionState.numerosAR);
+        await reExecuteOperationFromHistory(lastDivisionState.operacionInput);
     });
 }
 
@@ -285,7 +338,7 @@ function actualizarEstadoDivisionUI(esDivisionValida) {
     else if (botExp && botNor) { 
         botExp.style.display = "none";
         botNor.style.display = "none";
-        lastDivisionState = { operacionInput: '', numerosAR: null, tipo: '' };
+        lastDivisionState = { operacionInput: '', numerosAR: null, tipo: '' }; 
     }
 }
 
@@ -337,8 +390,7 @@ function activadoBotones(contDisplay) {
 document.addEventListener('DOMContentLoaded', alCargar);
 
 
-// Velocidad de title y cambio al pasar de pestaña
-
+// Velocidad de title y cambio al pasar de pestaña (sin cambios)
 let baseTitle = "Calculadora Facundo 🧮";
 let altTitle = "¡Regresa! 😢 🧮 ";
 let scrollTitle = altTitle + " ";
@@ -354,17 +406,15 @@ function startTitleAnimation() {
   interval = setInterval(() => {
     document.title = scrollTitle.substring(pos) + scrollTitle.substring(0, pos);
     pos = (pos + 1) % scrollTitle.length;
-  }, 40); // 💨 Rápido
+  }, 40); 
 }
 
 function stopTitleAnimation() {
   clearInterval(interval);
   clearTimeout(timeout);
 
-  // Paso 1: mostrar mensaje de bienvenida
   document.title = "Gracias por volver 😊";
 
-  // Paso 2: después de 2 segundos, volver al título base
   timeout = setTimeout(() => {
     document.title = baseTitle;
   }, 2000);
