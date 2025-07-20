@@ -386,3 +386,37 @@ header .subtitle a:hover {
 
 
 
+/* Agrega esto a tu archivo CSS */
+
+/* Define la animación de pulso */
+@keyframes pulse-highlight {
+    0% {
+        background-color: transparent; /* Empieza transparente */
+        transform: scale(1);
+    }
+    50% {
+        background-color: rgba(255, 255, 0, 0.2); /* Un toque de amarillo sutil */
+        transform: scale(1.02); /* Ligeramente más grande */
+    }
+    100% {
+        background-color: transparent; /* Vuelve a transparente */
+        transform: scale(1);
+    }
+}
+
+/* Aplica la animación a la clase del historial */
+.history-panel__item.history-item-highlight {
+    animation: pulse-highlight 1.5s ease-out forwards; /* Duración de 1.5s, coincide con el JS */
+    /* Asegúrate de que no haya una transición de fondo que interfiera si la tienes definida en .history-panel__item */
+    transition: none; /* Deshabilita cualquier transición de fondo que pueda conflictuar */
+}
+
+/* Opcional: si quieres un borde o un color de texto diferente durante el resaltado */
+/*
+.history-panel__item.history-item-highlight {
+    border: 1px solid yellow;
+}
+.history-panel__item.history-item-highlight .history-panel__result {
+    color: #ffd700; / Color oro para el resultado /
+}
+*/
