@@ -383,3 +383,53 @@ header .subtitle a:hover {
   z-index: 10;
   /* La transición y opacidad se manejan con JS para el bucle final */
 }
+
+
+
+
+/* ======================================================= */
+/* --- MEJORAS RESPONSIVAS PARA APROVECHAR LA ALTURA --- */
+/* ======================================================= */
+
+/* 1. Preparamos el body para que su hijo pueda ocupar toda la altura */
+body {
+    /* Nos aseguramos de que el body permita a su hijo directo crecer.
+       El padding debe estar aquí para dar aire en los bordes de la pantalla. */
+    padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px);
+}
+
+/* 2. Hacemos que el contenedor principal de la calculadora sea un "pilar" vertical */
+.calculator-container {
+    display: flex;          /* Lo convertimos en un contenedor flex */
+    flex-direction: column; /* Sus hijos se apilarán verticalmente */
+    height: 100%;           /* ¡CLAVE! Le decimos que ocupe toda la altura disponible */
+    max-height: 100dvh;     /* Para evitar que se salga de la pantalla */
+}
+
+/* 3. Distribuimos el espacio vertical entre los elementos de la calculadora */
+
+/* El header mantiene su tamaño natural y no se encoge */
+header[role="banner"] {
+    flex-shrink: 0;
+}
+
+/* ¡LA MAGIA OCURRE AQUÍ! */
+/* Hacemos que el DISPLAY sea el que crezca para llenar el espacio vacío */
+.display {
+    flex-grow: 1; /* Esta propiedad hace que el display se estire y ocupe el espacio sobrante */
+    min-height: 80px; /* Le damos una altura mínima para que nunca sea demasiado pequeño */
+}
+
+/* El teclado mantiene su tamaño y proporción cuadrada, y no se encoge */
+.keyboard-container {
+    flex-shrink: 0; /* Evita que el teclado se achate si no hay espacio */
+    /* Tu regla 'aspect-ratio: 1 / 1' se encargará de que siga siendo un cuadrado perfecto
+       basado en el ancho del dispositivo, que es exactamente lo que queremos. */
+}
+
+/* Opcional: Si usas un ID #contenedor, asegúrate de que también aplique */
+#contenedor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
