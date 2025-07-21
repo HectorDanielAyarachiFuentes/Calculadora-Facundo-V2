@@ -550,9 +550,7 @@ header .subtitle a:hover {
         box-sizing: border-box;
     }
 
-    body {
-        padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px);
-    }
+ 
 
     /* === Contenedor principal === */
     #contenedor {
