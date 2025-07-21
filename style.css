@@ -527,7 +527,10 @@ header .subtitle a:hover {
         transform: scale(1);
     }
 }
+/* Color del mensaje de error */
 
+ .error {color: white;
+    }
 
 
 
