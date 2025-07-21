@@ -560,7 +560,7 @@ header .subtitle a:hover {
 
     html, body {
         height: 100vh;
-        margin: 0;
+        margin: 1px;
         padding: 0;
         overflow: hidden; /* evita scroll */
         box-sizing: border-box;
