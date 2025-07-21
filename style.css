@@ -538,39 +538,70 @@ header .subtitle a:hover {
 /* --- MEDIA QUERIES PARA VISTAS MÓVILES (PANTALLA COMPLETA) --- */
 /* ======================================================= */
 
-
-
 @media (max-width: 600px) {
 
     /* === Reset y base === */
-    html, body {
-        height: 100vh;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+    html {
+        /* Es una buena práctica aplicar el box-sizing a todo */
         box-sizing: border-box;
+    }
+    *, *:before, *:after {
+        box-sizing: inherit;
     }
 
     body {
-        padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px);
+        margin: 0;
+        padding: 0;
+        /* Usa min-height en lugar de height. Permite que el contenido crezca y haga scroll si es necesario. */
+        min-height: 100vh;
+        /* overflow: hidden; <-- ELIMINADO. Este era el principal problema. */
+
+        /* --- NUEVO: Usamos Flexbox para el layout principal --- */
+        display: flex;
+        flex-direction: column; /* Apila los elementos verticalmente */
+
+        /* --- Padding que respeta las áreas seguras en todos los lados --- */
+        /* Agregamos un poco de espacio (20px) extra en la parte inferior para que no quede pegado a la barra de navegación */
+        padding-top: env(safe-area-inset-top, 10px);
+        padding-right: env(safe-area-inset-right, 10px);
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        padding-left: env(safe-area-inset-left, 10px);
     }
 
     /* === Contenedor principal === */
     #contenedor {
         width: 100% !important;
         max-width: none !important;
-        margin-bottom: 20px; /* <-- margen inferior agregado */
+        margin-bottom: 0; /* Ya no es necesario, el padding del body y flexbox lo gestionan */
+
+        /* --- NUEVO: Hacemos que el contenedor también sea flexible --- */
+        display: flex;
+        flex-direction: column;
+        /* flex-grow: 1; hará que este contenedor intente ocupar todo el espacio vertical disponible */
+        flex-grow: 1;
     }
 
     /* === Pantalla y teclado === */
     #cuerpoteclado {
-        width: auto !important;
+        width: 100% !important; /* Usar 100% en lugar de 'auto' para asegurar que ocupe el ancho del contenedor */
         height: auto !important;
+        
+        /* --- NUEVO: Hacemos que el cuerpo del teclado ocupe el espacio restante --- */
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Esto empujará el teclado hacia abajo, ocupando el espacio disponible */
+    }
+
+    #teclado {
+        /* Hacemos que la grilla de botones también ocupe el espacio vertical que le da su padre */
+        height: 100%;
     }
 
     #display {
         font-size: 10vw !important;
         padding: 15px;
+        /* Evita que la pantalla se encoja si el contenido es grande */
+        flex-shrink: 0;
     }
 
     #salida {
@@ -592,6 +623,11 @@ header .subtitle a:hover {
     }
 
     /* === Encabezado === */
+    header {
+        /* Evita que el header se encoja */
+        flex-shrink: 0;
+    }
+    
     header h1 {
         font-size: 12vw !important;
         letter-spacing: 1px !important;
@@ -607,4 +643,3 @@ header .subtitle a:hover {
         padding-top: 25%;
     }
 }
-
