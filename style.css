@@ -539,29 +539,33 @@ header .subtitle a:hover {
 /* ======================================================= */
 
 
+
 @media (max-width: 600px) {
-    
+
     /* === Reset y base === */
     html, body {
         height: 100vh;
         margin: 0;
         padding: 0;
-        overflow: hidden; /* evita scroll vertical */
+        overflow: hidden;
         box-sizing: border-box;
     }
 
- 
+    body {
+        padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px);
+    }
 
     /* === Contenedor principal === */
     #contenedor {
         width: 100% !important;
         max-width: none !important;
+        margin-bottom: 20px; /* <-- margen inferior agregado */
     }
 
     /* === Pantalla y teclado === */
     #cuerpoteclado {
-        width: 100% !important;
-        height: 100% !important;
+        width: auto !important;
+        height: auto !important;
     }
 
     #display {
