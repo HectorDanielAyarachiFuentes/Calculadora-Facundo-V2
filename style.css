@@ -539,31 +539,70 @@ header .subtitle a:hover {
 /* ======================================================= */
 
 
-
 @media (max-width: 600px) {
-    body { padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px); }
-    #contenedor { width: 100% !important; max-width: none !important; }
-    #cuerpoteclado { width: auto !important;height:auto !important; }
-
-    header h1 { font-size: 12vw !important; letter-spacing: 1px !important; }
-    header .subtitle { font-size: 3.5vw !important; }
-    /* Ajuste para Chakra Petch en display responsivo */
-    #display { font-size: 10vw !important; padding: 15px; }
-    /* Ajuste para Chakra Petch en botones responsivos */
-    #teclado button { font-size: 6vw; }
-    #volver { font-size: 7vw !important; } 
-    #botexp, #botnor { font-size: 3.5vw !important; padding: 8px; }
-    .error { font-size: 4.5vw !important; padding-top: 25%; }
-    #salida { font-size: 5vw !important; } 
-
-
-
+    
+    /* === Reset y base === */
     html, body {
         height: 100vh;
-        margin: 1px;
+        margin: 0;
         padding: 0;
-        overflow: hidden; /* evita scroll */
+        overflow: hidden; /* evita scroll vertical */
         box-sizing: border-box;
+    }
+
+    body {
+        padding: 10px env(safe-area-inset-right, 10px) 10px env(safe-area-inset-left, 10px);
+    }
+
+    /* === Contenedor principal === */
+    #contenedor {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* === Pantalla y teclado === */
+    #cuerpoteclado {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    #display {
+        font-size: 10vw !important;
+        padding: 15px;
+    }
+
+    #salida {
+        font-size: 5vw !important;
+    }
+
+    /* === Botones === */
+    #teclado button {
+        font-size: 6vw;
+    }
+
+    #volver {
+        font-size: 7vw !important;
+    }
+
+    #botexp, #botnor {
+        font-size: 3.5vw !important;
+        padding: 8px;
+    }
+
+    /* === Encabezado === */
+    header h1 {
+        font-size: 12vw !important;
+        letter-spacing: 1px !important;
+    }
+
+    header .subtitle {
+        font-size: 3.5vw !important;
+    }
+
+    /* === Mensajes de error === */
+    .error {
+        font-size: 4.5vw !important;
+        padding-top: 25%;
     }
 }
 
