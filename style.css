@@ -323,27 +323,59 @@ button:focus-visible {
 }
 
 /* --- FOOTER Y SU ANIMACIÓN --- */
+/* --- FOOTER TRANSPARENTE CON ANIMACIÓN SVG --- */
 footer {
-    background-color: var(--footer-bg); padding: 10px 0; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    display: flex; justify-content: center; align-items: center; height: 100px; width: 100%; flex-shrink: 0;
+    background-color: transparent; /* Fondo transparente */
+    padding: 10px 0; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100px; 
+    width: 100%; 
+    flex-shrink: 0;
+    position: relative; /* Para asegurar que el z-index funcione */
+    z-index: 1; /* Opcional: para asegurar que esté sobre otros elementos si es necesario */
 }
-footer svg { overflow: visible; width: 500px; max-width: 90%; height: auto; }
+
+/* Elimina la sombra si no la quieres */
+footer {
+    box-shadow: none;
+}
+
+/* Mantén el resto de estilos del SVG y animaciones igual */
+footer svg { 
+    overflow: visible; 
+    width: 500px; 
+    max-width: 90%; 
+    height: auto; 
+}
 footer svg path#line {
-    fill: none; stroke: #e00000; stroke-width: 2; stroke-linecap: butt; stroke-linejoin: round;
-    stroke-miterlimit: 4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: dash 4s linear infinite;
+    fill: none; 
+    stroke: #e00000; 
+    stroke-width: 2; 
+    stroke-linecap: butt; 
+    stroke-linejoin: round;
+    stroke-miterlimit: 4; 
+    stroke-dasharray: 1; 
+    stroke-dashoffset: 1; 
+    animation: dash 4s linear infinite;
 }
 footer svg image#heart {
-    opacity: 0; transform: scale(0); transform-origin: center; animation: blink 4s linear infinite;
+    opacity: 0; 
+    transform: scale(0); 
+    transform-origin: center; 
+    animation: blink 4s linear infinite;
 }
 @keyframes dash {
-    0% { stroke-dashoffset: 1; } 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; }
+    0% { stroke-dashoffset: 1; } 
+    80% { stroke-dashoffset: 0; } 
+    100% { stroke-dashoffset: 0; }
 }
 @keyframes blink {
     0%, 35%, 70%, 100% { opacity: 0; transform: scale(0); }
     40%, 50% { opacity: 1; transform: scale(1.2); }
     45%, 55%, 65% { opacity: 1; transform: scale(1.0); }
 }
-
 /* --- DISEÑO RESPONSIVE (MÓVIL) --- */
 @media (max-width: 960px) {
     .page-wrapper {
