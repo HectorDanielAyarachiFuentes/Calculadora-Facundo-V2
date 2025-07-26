@@ -278,7 +278,7 @@ button:focus-visible {
 .history-panel--open { right: 0; visibility: visible; }
 .history-panel__header {
     display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
-    padding: 15px 20px; background-color: var(--history-header-bg); border-bottom: 1px solid var(--history-border-color);
+    padding: 15px 80px 15px 20px; background-color: var(--history-header-bg); border-bottom: 1px solid var(--history-border-color);
 }
 .history-panel__title { margin: 0; font-size: 1.3em; font-weight: bold; color: var(--history-text-color); }
 .history-panel__clear-btn {
