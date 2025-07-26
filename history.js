@@ -116,32 +116,69 @@ class HistoryPanelClass {
         });
     }
 
-    // *** ¡FUNCIÓN CLAVE COMPLETAMENTE REESCRITA Y ROBUSTA! ***
-    // Extrae el texto del resultado de forma inteligente, basándose en la posición de las celdas.
+    // *** ¡FUNCIÓN CLAVE MEJORADA PARA RAÍZ CUADRADA, DIVISIÓN Y FACTORES! ***
     extractResultText(htmlString) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
 
-        // 1. Seleccionamos todas las celdas que pueden formar parte de un resultado
-        //    (números, comas, y el signo negativo).
+        // --- Caso prioritario: Raíz Cuadrada ---
+        // Distintivo: tiene el elemento con clase 'output-grid__radical'.
+        const isSquareRoot = tempDiv.querySelector('.output-grid__radical');
+        if (isSquareRoot) {
+            const resultCells = Array.from(tempDiv.querySelectorAll('.output-grid__cell--cociente'));
+            
+            if (resultCells.length === 0) {
+                 const error = tempDiv.querySelector('.output-screen__error-message');
+                 if (error) return error.textContent.trim();
+                 return 'Resultado no disponible';
+            }
+            
+            // Ordenar las celdas del resultado por su posición horizontal.
+            resultCells.sort((a, b) => (parseFloat(a.style.left) || 0) - (parseFloat(b.style.left) || 0));
+            
+            // Unir el texto de cada celda para formar el resultado final.
+            const rawResult = resultCells.map(cell => cell.textContent).join('');
+            
+            return rawResult.replace('.', ',');
+        }
+
+        // --- Caso 1: División ---
+        // Distintivo: tiene celdas de divisor Y de cociente.
+        const hasDivisorCells = tempDiv.querySelector('.output-grid__cell--divisor');
+        const hasCocienteCells = tempDiv.querySelector('.output-grid__cell--cociente');
+        
+        if (hasDivisorCells && hasCocienteCells) {
+            const cocienteCellsArr = Array.from(tempDiv.querySelectorAll('.output-grid__cell--cociente'));
+            cocienteCellsArr.sort((a, b) => (parseFloat(a.style.left) || 0) - (parseFloat(b.style.left) || 0));
+            const rawResult = cocienteCellsArr.map(cell => cell.textContent).join('');
+            return rawResult.replace('.', ',');
+        }
+        
+        // --- Caso 2: Factores Primos ---
+        // Distintivo: tiene celdas de divisor pero NO de cociente.
+        if (hasDivisorCells && !hasCocienteCells) {
+            const factorCells = Array.from(tempDiv.querySelectorAll('.output-grid__cell--divisor'));
+            factorCells.sort((a, b) => (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
+            const factors = factorCells.map(cell => cell.textContent);
+            if (factors.length === 1 && factors[0] === '1') {
+                return '1'; // Caso especial para factores(1)
+            }
+            return factors.join(' × ');
+        }
+
+        // --- Caso 3: Resto de operaciones (Suma, Resta, Multiplicación) ---
+        // El resultado está en la línea más baja de celdas 'cociente' o 'producto'.
         const candidateCells = tempDiv.querySelectorAll('.output-grid__cell--cociente, .output-grid__cell--producto');
 
-        // 2. Si no hay celdas de resultado, buscamos un mensaje de error o resto.
         if (candidateCells.length === 0) {
             const error = tempDiv.querySelector('.output-screen__error-message');
             if (error) return error.textContent.trim();
-            const resto = tempDiv.querySelector('.output-grid__cell--resto');
-            if (resto) return `Resto: ${resto.textContent.trim()}`;
-            return 'Resultado no disponible'; // Fallback final
+            return 'Resultado no disponible'; 
         }
 
-        // 3. Agrupamos las celdas por su línea vertical (posición 'top').
         const lines = new Map();
         candidateCells.forEach(cell => {
-            // Redondeamos el 'top' para agrupar celdas que están en la misma línea
-            // aunque tengan diferencias de subpíxeles. Usamos '|| 0' como seguridad.
             const top = Math.round(parseFloat(cell.style.top) || 0);
-            
             if (!lines.has(top)) {
                 lines.set(top, []);
             }
@@ -150,18 +187,15 @@ class HistoryPanelClass {
 
         if (lines.size === 0) return "Error al procesar resultado";
 
-        // 4. Identificamos la línea del resultado final (la que está más abajo).
         const lowestLineY = Math.max(...lines.keys());
         const resultLineCells = lines.get(lowestLineY);
 
-        // 5. Ordenamos las celdas de esa línea de izquierda a derecha.
         resultLineCells.sort((a, b) => {
             const leftA = parseFloat(a.style.left) || 0;
             const leftB = parseFloat(b.style.left) || 0;
             return leftA - leftB;
         });
 
-        // 6. Unimos el texto para formar el resultado final y correcto.
         return resultLineCells.map(cell => cell.textContent).join('');
     }
 
