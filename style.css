@@ -497,4 +497,24 @@ footer svg image#heart {
         font-size: 0.75rem;
         padding-bottom: env(safe-area-inset-bottom, 10px); 
     }
+
+
+#contenedor {
+  padding-left: 0 !important;
+}
+
+#display {
+  margin-left: 0 !important;
+}
+
+
+}
+
+
+#contenedor {
+  padding-left: 1em; /* relativo al tamaño de fuente */
+}
+
+#display {
+  margin-left: 0; /* que siga el flujo sin desplazarse */
 }
