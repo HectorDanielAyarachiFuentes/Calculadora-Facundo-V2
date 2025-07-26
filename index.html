@@ -12,7 +12,7 @@
     <meta name="author" content="Hector Daniel Ayarachi Fuentes">
 
     <!-- Color del tema para navegadores móviles -->
-    <meta name="theme-color" content="#66FF66">
+    <meta name="theme-color" content="#121212">
 
     <!-- Ícono (favicon) optimizado -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='5' y='5' width='90' height='90' rx='15' fill='%2366FF66'/><text x='50' y='55' font-size='40' text-anchor='middle' fill='%23000' font-family='Arial, sans-serif'>FC</text></svg>">
@@ -32,72 +32,69 @@
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-
-    <!-- Structured Data para SEO -->
-   
 </head>
 
 <body>
-    <main id="contenedor" class="calculator-container" role="main">
-        <header role="banner">
+    <!-- Contenedor principal para alinear el título y la calculadora -->
+    <div class="page-wrapper">
+        <header role="banner" class="main-header">
             <h1>LA<br>CALCULADORA<br>DE <span>FACUNDO</span></h1>
             <p class="subtitle">Un proyecto de <a href="https://github.com/HectorDanielAyarachiFuentes" target="_blank" rel="noopener">Facundo Killer</a></p>
         </header>
 
-        <section aria-label="Pantalla de la calculadora">
-            <div id="display" class="display" role="textbox" aria-live="polite">0</div>
-        </section>
+        <main id="contenedor" class="calculator-container" role="main">
+            <section aria-label="Pantalla de la calculadora">
+                <div id="display" class="display" role="textbox" aria-live="polite">3x6</div>
+            </section>
 
-        <section aria-label="Teclado y pantalla de operaciones">
-            <div id="cuerpoteclado" class="keyboard-container">
-                <div id="teclado" class="keyboard" role="grid">
-                    <!-- Fila 1 -->
-                    <button class="keyboard__button keyboard__button--special keyboard__button--double-width" data-action="view-screen" aria-label="Ver pantalla de resultados">Ver<br>Pantalla</button>
-                    <button id="tcal" class="keyboard__button keyboard__button--equals keyboard__button--triple-width" data-action="calculate" aria-label="Calcular">=</button>
+            <section aria-label="Teclado y pantalla de operaciones">
+                <div id="cuerpoteclado" class="keyboard-container">
+                    <div id="teclado" class="keyboard" role="grid">
+                        <!-- Fila 1 -->
+                        <button class="keyboard__button keyboard__button--special keyboard__button--double-width" data-action="view-screen" aria-label="Ver pantalla de resultados">Ver<br>Pantalla</button>
+                        <button id="tcal" class="keyboard__button keyboard__button--equals keyboard__button--triple-width" data-action="calculate" aria-label="Calcular">=</button>
 
-                    <!-- Fila 2 -->
-                    <button class="keyboard__button keyboard__button--number" data-value="7">7</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="8">8</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="9">9</button>
-                    <button id="tmas" class="keyboard__button keyboard__button--operator" data-value="+">+</button>
-                    <button id="tmen" class="keyboard__button keyboard__button--operator" data-value="-">-</button>
+                        <!-- Fila 2 -->
+                        <button class="keyboard__button keyboard__button--number" data-value="7">7</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="8">8</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="9">9</button>
+                        <button id="tmas" class="keyboard__button keyboard__button--operator" data-value="+">+</button>
+                        <button id="tmen" class="keyboard__button keyboard__button--operator" data-value="-">-</button>
 
-                    <!-- Fila 3 -->
-                    <button class="keyboard__button keyboard__button--number" data-value="4">4</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="5">5</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="6">6</button>
-                    <button id="tpor" class="keyboard__button keyboard__button--operator" data-value="x">×</button>
-                    <button id="tdiv" class="keyboard__button keyboard__button--operator" data-value="/">÷</button>
+                        <!-- Fila 3 -->
+                        <button class="keyboard__button keyboard__button--number" data-value="4">4</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="5">5</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="6">6</button>
+                        <button id="tpor" class="keyboard__button keyboard__button--operator" data-value="x">×</button>
+                        <button id="tdiv" class="keyboard__button keyboard__button--operator" data-value="/">÷</button>
 
-                    <!-- Fila 4 -->
-                    <button class="keyboard__button keyboard__button--number" data-value="1">1</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="2">2</button>
-                    <button class="keyboard__button keyboard__button--number" data-value="3">3</button>
-                    <button id="tpri" class="keyboard__button keyboard__button--equals" data-action="primos" aria-label="Factores Primos">|</button>
-                    <button id="trai" class="keyboard__button keyboard__button--equals" data-action="raiz" aria-label="Raíz Cuadrada">√</button>
+                        <!-- Fila 4 -->
+                        <button class="keyboard__button keyboard__button--number" data-value="1">1</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="2">2</button>
+                        <button class="keyboard__button keyboard__button--number" data-value="3">3</button>
+                        <button id="tpri" class="keyboard__button keyboard__button--operator" data-action="primos" aria-label="Factores Primos">|</button>
+                        <button id="trai" class="keyboard__button keyboard__button--operator" data-action="raiz" aria-label="Raíz Cuadrada">√</button>
 
-                    <!-- Fila 5 -->
-                    <button class="keyboard__button keyboard__button--number keyboard__button--double-width" data-value="0">0</button>
-                    <button id="tcom" class="keyboard__button keyboard__button--number" data-value=",">,</button>
-                    <button class="keyboard__button keyboard__button--operator" data-action="clear" aria-label="Limpiar Todo">C</button>
-                    <button class="keyboard__button keyboard__button--operator" data-action="delete" aria-label="Borrar">⌫</button>
+                        <!-- Fila 5 -->
+                        <button class="keyboard__button keyboard__button--number keyboard__button--double-width" data-value="0">0</button>
+                        <button id="tcom" class="keyboard__button keyboard__button--number" data-value=",">,</button>
+                        <button class="keyboard__button keyboard__button--action" data-action="clear" aria-label="Limpiar Todo">C</button>
+                        <button class="keyboard__button keyboard__button--action" data-action="delete" aria-label="Borrar">⌫</button>
+                    </div>
+
+                    <div id="salida" class="output-screen" role="region" aria-live="polite"></div>
+
+                    <nav id="divvolver" class="bottom-nav" aria-label="Controles de resultados">
+                        <button id="volver" class="bottom-nav__button bottom-nav__button--arrow" data-action="hide-screen" aria-label="Volver al teclado">↩</button>
+                        <button id="botexp" class="bottom-nav__button" data-action="divide-expanded" aria-label="Ver división expandida">DIV EXPAND.</button>
+                        <button id="botnor" class="bottom-nav__button" data-action="divide-normal" aria-label="Ver división normal">DIV NORMAL</button>
+                    </nav>
                 </div>
-
-                <div id="salida" class="output-screen" role="region" aria-live="polite"></div>
-
-                <nav id="divvolver" class="bottom-nav" aria-label="Controles de resultados">
-                    <button id="volver" class="bottom-nav__button bottom-nav__button--arrow" data-action="hide-screen" aria-label="Volver al teclado">↩</button>
-                    <button id="botexp" class="bottom-nav__button" data-action="divide-expanded" aria-label="Ver división expandida">DIV EXPAND.</button>
-                    <button id="botnor" class="bottom-nav__button" data-action="divide-normal" aria-label="Ver división normal">DIV NORMAL</button>
-                </nav>
-            </div>
-        </section>
-    </main>
-
-    <button id="history-toggle-btn" class="history-toggle-btn" aria-label="Mostrar u ocultar historial" aria-controls="history-panel">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13,3A9,9,0,0,0,4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7,0,0,1,13,5V8L18,4L13,0V3M12,12.5A1.5,1.5,0,0,0,10.5,14A1.5,1.5,0,0,0,12,15.5A1.5,1.5,0,0,0,13.5,14A1.5,1.5,0,0,0,12,12.5Z"/></svg>
-    </button>
-
+            </section>
+        </main>
+    </div>
+    
+    <!-- Panel de historial (fuera del flujo principal para posicionamiento) -->
     <aside id="history-panel" class="history-panel" role="complementary" aria-hidden="true">
         <header class="history-panel__header">
             <h2 id="history-title" class="history-panel__title">Historial</h2>
@@ -108,13 +105,21 @@
         </ul>
     </aside>
 
-    <!--
-      Sección de Scripts final y correcta.
-      Solo se necesita cargar 'main.js' como un módulo.
-      Él se encargará de importar todos los demás archivos JS necesarios.
-    -->
+    <!-- Botón para mostrar/ocultar historial -->
+    <button id="history-toggle-btn" class="history-toggle-btn" aria-label="Mostrar u ocultar historial" aria-controls="history-panel">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13,3A9,9,0,0,0,4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7,0,0,1,13,5V8L18,4L13,0V3M12,12.5A1.5,1.5,0,0,0,10.5,14A1.5,1.5,0,0,0,12,15.5A1.5,1.5,0,0,0,13.5,14A1.5,1.5,0,0,0,12,12.5Z"/></svg>
+    </button>
+    
+    <!-- Pie de página -->
+    <footer>
+        <svg xmlns="http://www.w3.org/2000/svg" id="svg5" version="1.1" viewBox="0 0 502.98 108.61">
+            <path pathLength="1" id="line" d="M5.32 78.13c.96-.01 5-8.5 5.54-8.54.58-.05 6.1 8.51 7.1 8.51 3.66 0 9.29.06 10.71.05 2.53-.01 4.82-72.88 4.82-72.88l4.76 97.28 3.97-24.45 20.45-.22C64 77.86 77.1 63.66 78.36 63.8c1.31.15 6.68 14.08 7.94 14.07 2.3-.03 33.32.04 35.76.02.96 0 5-8.5 5.53-8.53.59-.05 6.1 8.51 7.1 8.5 3.66 0 9.3.07 10.72.06 2.53-.02 4.81-72.89 4.81-72.89l4.77 97.28 3.97-24.44s83.34-3.33 74.69 7.67c-8.65 11-45.3-42.94-31.65-53.58 25.6-19.96 49.96 36.94 40.26 36.5-12.2-.53 1.8-62.32 23.41-51.7 32.24 15.86-17.56 84.92-26.4 81.77-5.73-2.05-.68-21.68 31.4-26.58 26.65-6.42 29.5 2.35 52.62 7.11 2.53-.02 4.82-72.89 4.82-72.89l4.76 97.28 3.97-24.44 20.45-.22c1.31-.02 14.41-14.22 15.68-14.07 1.32.15 6.7 14.08 7.95 14.07 2.29-.03 33.32.04 35.76.02.95 0 5-8.5 5.53-8.54.58-.04 6.1 8.52 7.1 8.52 3.66 0 9.3.06 10.72.05 2.53-.02 4.81-72.89 4.81-72.89l4.77 97.28 3.97-24.44 20.45-.23c1.31-.01 14.4-14.22 15.68-14.07 1.32.16 6.69 14.09 7.94 14.07" />
+            <image id="heart"
+                   href="https://scontent.fnqn2-1.fna.fbcdn.net/v/t39.30808-6/514003261_24210895048575255_339659088890321284_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFeUZQbXxuu9oofNjwR6s0I9sLlQfJdAI32wuVB8l0AjTGvKR__ecLtHruXc4GzEiZ4ayWV-F5eU1ciA_8olKre&_nc_ohc=2LgC5oKZ0hsQ7kNvwFmXylO&_nc_oc=Adl-O_l5gjBjltjtAUgEMTkw-W7M7orhAdJaGHZGelE-HseomiM5Ffj4qYfgMo_VO52-7QrNp4tocdSe1EhXCQca&_nc_zt=23&_nc_ht=scontent.fnqn2-1.fna&_nc_gid=ZNCjQmgtm3W2Us92-tWE6Q&oh=00_AfRetaQW3fTji6Kpo0QSIUZFEyVl_3eeasI744Uk9RDHzA&oe=688966F"
+                   x="215" y="40" width="70" height="60" />
+        </svg>
+    </footer>
 
     <script type="module" src="main.js"></script>
-
 </body>
 </html>
