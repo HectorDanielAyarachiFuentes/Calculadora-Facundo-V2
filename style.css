@@ -61,7 +61,7 @@ body {
     background-image: repeating-linear-gradient(90deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px), repeating-linear-gradient(0deg, var(--bg-grid-lines) 0 1px, transparent 1px 96px);
     font-family: 'Quicksand', sans-serif;
     color: #fff;
-    overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 button {
