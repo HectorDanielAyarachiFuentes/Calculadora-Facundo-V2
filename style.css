@@ -530,6 +530,7 @@ footer svg image#heart {
         padding-bottom: env(safe-area-inset-bottom, 10px); 
     }
 
+    /* Calculadora ocupa todo el espacio */
 
 #contenedor {
   padding-left: 0 !important;
@@ -542,6 +543,7 @@ footer svg image#heart {
 
 }
 
+    /* Alinea el display de numeros con el cotenedor de los numeros */
 
 #contenedor {
   padding-left: 1em; /* relativo al tamaño de fuente */
